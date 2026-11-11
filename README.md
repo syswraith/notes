@@ -59,6 +59,9 @@ Add the workflow (included in the template) to `.github/workflows/build.yml`. Af
 
 ## Writing posts
 
+> [!IMPORTANT]
+> Restrict issue creation to collaborators only else anyone can trigger a workflow by creating an issue!
+
 Open an issue in the repository. The issue title becomes the post title; the body becomes the post content. Use labels to tag posts. Close the issue to unpublish.
 
 Math works with `$...$` (inline) and `$$...$$` (block) delimiters via KaTeX.
