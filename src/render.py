@@ -167,7 +167,10 @@ class Site:
                 )
 
     def absurl(self, rel: str = "") -> str:
-        return f"{self.site_url}{self.base}{rel.lstrip('/')}"
+        site = self.site_url.rstrip("/")
+        if rel:
+            return f"{site}/{rel.lstrip('/')}"
+        return f"{site}/"
 
     def _render(self, template: str, out: Path, **context):
         out.parent.mkdir(parents=True, exist_ok=True)
