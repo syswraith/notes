@@ -26,7 +26,6 @@ def build_post(client: Github, issue: dict) -> Post:
             Comment(
                 author=c["user"]["login"],
                 author_url=c["user"]["html_url"],
-                avatar_url=c["user"]["avatar_url"],
                 created_at=c["created_at"],
                 body_html=c.get("body_html") or "",
                 )

@@ -50,8 +50,6 @@ body > header {
 }
 
 .comment {
-  display: flex;
-  gap: 0.75em;
   border-left: 2px solid #ddd;
   padding-left: 1.5em;
 }
@@ -66,11 +64,6 @@ body > header {
 
 .comment header p {
   margin: 0 0 0.75em;
-}
-
-.avatar {
-  border-radius: 50%;
-  flex-shrink: 0;
 }
 
 .contains-task-list {

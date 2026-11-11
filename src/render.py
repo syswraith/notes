@@ -27,7 +27,6 @@ URL_RE = re.compile(r'https://private-user-images\.githubusercontent\.com/[^"\s]
 class Comment:
     author: str
     author_url: str
-    avatar_url: str
     created_at: str
     body_html: str
     replies: list["Comment"] = field(default_factory=list)

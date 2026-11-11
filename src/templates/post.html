@@ -23,7 +23,6 @@
 <h2 id="comments">{{ post.comments|count_comments }} comment{{ post.comments|count_comments|plural }}</h2>
 {% macro render_comment(comment) %}
 <article class="comment">
-  <img class="avatar" src="{{ comment.avatar_url }}&amp;s=32" width="32" height="32" alt="{{ comment.author }}">
   <div>
     <header>
       <p>
