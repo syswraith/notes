@@ -244,7 +244,7 @@ class Site:
             older = posts[i + 1] if i + 1 < len(posts) else None
             og = {
                     "title": post.title,
-                    "url": self.absurl(f"posts/{post.number}/"),
+                    "url": self.absurl(f"{post.number}/"),
                     "type": "article",
                     "description": _post_description(post),
                     "published": post.created_at,
