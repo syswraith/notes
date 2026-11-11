@@ -19,6 +19,13 @@
   {% if og.published %}<meta property="article:published_time" content="{{ og.published }}">{% endif %}
   {% for tag in og.tags %}<meta property="article:tag" content="{{ tag }}">{% endfor %}
   <meta name="twitter:card" content="summary_large_image">
+  {% if og.title %}<meta name="twitter:title" content="{{ og.title }}">{% endif %}
+  {% if og.description %}<meta name="twitter:description" content="{{ og.description }}">{% endif %}
+  {% if og.image %}<meta name="twitter:image" content="{{ og.image }}">{% endif %}
+  {% if og.tags %}<meta name="keywords" content="{{ og.tags|join(', ') }}">{% endif %}
+  <meta property="og:locale" content="en_US">
+  {% if og.modified %}<meta property="article:modified_time" content="{{ og.modified }}">{% endif %}
+  {% if og.section %}<meta property="article:section" content="{{ og.section }}">{% endif %}
   <meta property="article:author" content="{{ user }}">
 </head>
 <body>
