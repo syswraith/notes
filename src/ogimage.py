@@ -50,14 +50,14 @@ def _download_favicon(site_url: str) -> str | None:
 
 def generate_thumbnail(post, site_url: str, out_dir: Path) -> str | None:
     '''
-    Generate a per-post OpenGraph thumbnail SVG with pictex.
-    Returns the relative path (e.g. "1/images/thumbnail.svg") or None.
+    Generate a per-post OpenGraph thumbnail PNG with pictex.
+    Returns the relative path (e.g. "1/images/thumbnail.png") or None.
     '''
     if not _PICTEX_AVAILABLE:
         print("  ! pictex not installed; skipping thumbnail", file=sys.stderr)
         return None
 
-    target = out_dir / str(post.number) / "images" / "thumbnail.svg"
+    target = out_dir / str(post.number) / "images" / "thumbnail.png"
     target.parent.mkdir(parents=True, exist_ok=True)
 
     favicon_path = _download_favicon(site_url)
@@ -79,8 +79,8 @@ def generate_thumbnail(post, site_url: str, out_dir: Path) -> str | None:
 
     layout = Column(*children).gap(32).padding(60).height(630)
 
-    vector_image = canvas.render_as_svg(layout, embed_font=False)
-    vector_image.save(str(target))
+    image = canvas.render(layout)
+    image.save(str(target))
 
     if favicon_path:
         try:
@@ -88,4 +88,4 @@ def generate_thumbnail(post, site_url: str, out_dir: Path) -> str | None:
         except OSError:
             pass
 
-    return f"{post.number}/images/thumbnail.svg"
+    return f"{post.number}/images/thumbnail.png"
