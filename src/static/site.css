@@ -1,9 +1,9 @@
-body > header,
-body > main,
-article {
-  max-width: 720px;
-  margin-left: auto;
-  margin-right: auto;
+.bottom-links {
+  margin-top: 2em;
+}
+
+.breadcrumb a {
+  text-decoration: none;
 }
 
 body > header {

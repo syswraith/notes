@@ -152,6 +152,8 @@ class Site:
         self.site_url = site_url.rstrip("/")
         path = urlparse(self.site_url).path.strip("/")
         self.base = f"/{path}/" if path else "/"
+        parsed = urlparse(self.site_url)
+        self.tld = f"{parsed.scheme}://{parsed.netloc}/"
 
         self.env = Environment(
                 loader=FileSystemLoader(TEMPLATES_DIR),
@@ -165,6 +167,7 @@ class Site:
                 user=user,
                 repo=repo,
                 base=self.base,
+                tld=self.tld,
                 absurl=self.absurl,
                 )
 
