@@ -62,24 +62,24 @@ def generate_thumbnail(post, site_url: str, out_dir: Path) -> str | None:
 
     favicon_path = _download_favicon(site_url)
 
-    canvas = Canvas().width(1200).height(630).background_color("white")
+    canvas = Canvas().width(1200).height(630).background_color("white").font_family("DejaVu Sans")
 
     children = [
-        Text(post.title).font_size(44).font_weight(700).color("#111827"),
-        Text(f"by {post.author}").font_size(24).color("#555555"),
+        Text(post.title).font_size(72).font_weight(800).color("#111827"),
+        Text(f"by {post.author}").font_size(32).color("#555555"),
     ]
     if post.description:
         children.append(
-            Text(_plain(post.description)).font_size(18).font_style("italic").color("#555555")
+            Text(_plain(post.description)).font_size(28).font_style("italic").color("#555555")
         )
     if favicon_path:
         children.append(
-            Image(favicon_path).size(40, 40).absolute_position(right=30, bottom=30)
+            Image(favicon_path).size(48, 48).absolute_position(right=40, bottom=40)
         )
 
-    layout = Column(*children).gap(24).padding(50).height(630)
+    layout = Column(*children).gap(32).padding(60).height(630)
 
-    vector_image = canvas.render_as_svg(layout, embed_font=True)
+    vector_image = canvas.render_as_svg(layout, embed_font=False)
     vector_image.save(str(target))
 
     if favicon_path:
