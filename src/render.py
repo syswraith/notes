@@ -11,6 +11,8 @@ from urllib.parse import urlparse
 import requests
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
+from ogimage import generate_thumbnail
+
 SRC_DIR = Path(__file__).parent
 TEMPLATES_DIR = SRC_DIR / "templates"
 STATIC_DIR = SRC_DIR / "static"
@@ -204,10 +206,19 @@ class Site:
             comment.body_html = self._localize_images(comment.body_html, img_dir, prefix)
             self._localize_comments(comment.replies, img_dir, prefix)
 
-    def write(self, posts: list[Post], out_dir: Path):
+    def write(self, posts: list[Post], out_dir: Path, site_url: str | None = None):
         shutil.rmtree(out_dir, ignore_errors=True)
         out_dir.mkdir(parents=True)
         shutil.copytree(STATIC_DIR, out_dir / "static")
+
+        site_url = site_url or self.site_url
+        thumbs: dict[int, str] = {}
+        for post in posts:
+            thumb = generate_thumbnail(post, site_url, out_dir)
+            if thumb:
+                thumbs[post.number] = thumb
+
+        site_thumb = next(iter(thumbs.values()), None)
 
         for post in posts:
             img_dir = out_dir / str(post.number) / "images"
@@ -223,6 +234,8 @@ class Site:
                 "description": self.description,
                 "tags": [],
                 }
+        if site_thumb:
+            site_og["image"] = self.absurl(site_thumb)
         self._render("index.html", out_dir / "index.html", posts=posts, og=site_og)
 
         for i, post in enumerate(posts):
@@ -237,6 +250,9 @@ class Site:
                     "published": post.created_at,
                     "tags": post.tags,
                     }
+            thumb = thumbs.get(post.number)
+            if thumb:
+                og["image"] = self.absurl(thumb)
             self._render("post.html", page, post=post, newer=newer, older=older, og=og)
 
         tags: dict[str, list[Post]] = {}
@@ -250,7 +266,10 @@ class Site:
                 "description": self.description,
                 "tags": [],
                 }
+        if site_thumb:
+            tags_og["image"] = self.absurl(site_thumb)
         self._render("tags.html", out_dir / "tags.html", tags=tags, og=tags_og)
+        self._render("tags.html", out_dir / "tags" / "index.html", tags=tags, og=tags_og)
 
         feed_updated = max(
                 (p.updated_at or p.created_at for p in posts),

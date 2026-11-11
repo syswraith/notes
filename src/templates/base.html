@@ -12,6 +12,7 @@
   <meta property="og:site_name" content="{{ site_title }}">
   <meta property="og:title" content="{{ og.title }}">
   <meta property="og:url" content="{{ og.url }}">
+  {% if og.image %}<meta property="og:image" content="{{ og.image }}">{% endif %}
   <meta property="og:type" content="{{ og.type }}">
   {% if og.description %}<meta property="og:description" content="{{ og.description }}">{% endif %}
   {% if og.published %}<meta property="article:published_time" content="{{ og.published }}">{% endif %}
@@ -25,7 +26,7 @@
   <nav>
     <ul>
       <li><a href="{{ base }}">Posts</a></li>
-      <li><a href="{{ base }}tags.html">Tags</a></li>
+      <li><a href="{{ base }}tags/">Tags</a></li>
       <li><a href="{{ base }}feed.xml">Feed</a></li>
     </ul>
   </nav>

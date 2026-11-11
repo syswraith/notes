@@ -60,7 +60,7 @@ def main():
         posts.append(build_post(client, issue))
 
     site = Site(site_title, USER, REPO, site_url, os.getenv("SITE_DESCRIPTION", ""))
-    site.write(posts, OUT_DIR)
+    site.write(posts, OUT_DIR, site_url=site_url)
 
     n_comments = sum(count_comments(p.comments) for p in posts)
     print(f"\nBuilt {len(posts)} post(s), {n_comments} comment(s) -> {OUT_DIR}/")

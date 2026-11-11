@@ -19,6 +19,7 @@ A minimal static site generator that publishes [microblogs](https://en.wikipedia
 - **Images** uploaded to issues are downloaded at build time and served locally — no short-lived signed URLs.
 - **Math** (`$...$`, `$$...$$`, `\[...\]`, `\( \)`) renders client-side via KaTeX.
 - **Feed**: Atom feed at `feed.xml`.
+- **OpenGraph**: per-post `thumbnail.svg` generated at build time with [pictex](https://pictex.readthedocs.io/), stored under `dist/{issue-number}/images/thumbnail.svg` and exposed as `og:image`.
 
 ## Local setup
 
@@ -27,7 +28,7 @@ A minimal static site generator that publishes [microblogs](https://en.wikipedia
 uv sync --frozen
 
 # Build (GITHUB_REPOSITORY is automatic in GitHub Actions; set it locally)
-GITHUB_REPOSITORY=owner/repo uv run python src/main.py
+GITHUB_REPOSITORY=owner/repo SITE_URL=http://localhost:8000 uv run python src/main.py
 
 # Serve locally
 python -m http.server 8000 -d dist
@@ -66,6 +67,7 @@ src/
   main.py        # Build orchestrator
   github.py      # GitHub API client
   render.py      # Dataclasses, comment threading, site renderer
+  ogimage.py     # OpenGraph thumbnail generation (pictex)
   templates/     # Jinja2 templates (base, index, post, tags, feed)
   static/        # awsm.css, site.css, syntax.css
 dist/            # Generated output (gitignored)
