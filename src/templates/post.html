@@ -4,7 +4,7 @@
 <nav class="breadcrumb"><a href="{{ tld }}">~</a> / <a href="{{ base }}">{{ repo }}</a> / <a href="{{ base }}{{ post.number }}/">{{ post.number }}</a></nav>
 <article>
   <header>
-    <h1>{{ post.title }}</h1>
+      <a href="{{ base }}{{ post.number }}/"><h1>{{ post.title }}</h1></a>
     {% if post.description %}<div class="description">{{ post.description|safe }}</div>{% endif %}
     <p>
       <time datetime="{{ post.created_at }}">{{ post.created_at|datefmt }}</time>
