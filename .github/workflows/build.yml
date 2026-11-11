@@ -33,7 +33,7 @@ jobs:
         uses: actions/configure-pages@v5
         with:
           enablement: true
-      - run: sudo apt-get update && sudo apt-get install -y libegl1 libgl1-mesa-glx libgbm1
+      - run: sudo apt-get update && sudo apt-get install -y libegl1 libgl1 libgbm1
         if: runner.os == 'Linux'
       - run: uv sync --frozen
       - run: uv run python src/main.py
