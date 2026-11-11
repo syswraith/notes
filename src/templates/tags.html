@@ -9,8 +9,7 @@
     <ul>
       {% for post in tag_posts %}
       <li>
-        <time datetime="{{ post.created_at }}">{{ post.created_at|datefmt }}</time>
-        &middot; <a href="{{ base }}posts/{{ post.number }}/">{{ post.title }}</a>
+        <a href="{{ base }}posts/{{ post.number }}/">{{ post.title }}</a>
       </li>
       {% endfor %}
     </ul>

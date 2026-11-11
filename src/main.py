@@ -48,7 +48,7 @@ def build_post(client: Github, issue: dict) -> Post:
 
 def main():
     site_url = os.getenv("SITE_URL", "http://localhost:8000")
-    site_title = os.getenv("SITE_TITLE", f"{USER}'s microblog")
+    site_title = os.getenv("SITE_TITLE", f"{USER}'s {REPO}")
 
     client = Github(USER, REPO)
     print(f"Fetching open issues from {USER}/{REPO}...")

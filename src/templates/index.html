@@ -5,7 +5,7 @@
     {% for post in posts %}
     <li>
       <a href="{{ base }}posts/{{ post.number }}/">
-        <time datetime="{{ post.created_at }}">{{ post.created_at|datefmt }}</time>: {{ post.title }}
+        <time datetime="{{ post.created_at }}">{{ post.created_at|datefmt }}</time> {{ post.title }}
       </a>
     </li>
     {% else %}

@@ -16,6 +16,7 @@
   {% if og.published %}<meta property="article:published_time" content="{{ og.published }}">{% endif %}
   {% for tag in og.tags %}<meta property="article:tag" content="{{ tag }}">{% endfor %}
   <meta name="twitter:card" content="summary">
+  <meta property="article:author" content="{{ user }}">
 </head>
 <body>
 <header>
