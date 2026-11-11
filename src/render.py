@@ -207,8 +207,8 @@ class Site:
         shutil.copytree(STATIC_DIR, out_dir / "static")
 
         for post in posts:
-            img_dir = out_dir / "posts" / str(post.number) / "images"
-            prefix = f"{self.base}posts/{post.number}/images/"
+            img_dir = out_dir / str(post.number) / "images"
+            prefix = f"{self.base}{post.number}/images/"
             post.description = self._localize_images(post.description, img_dir, prefix)
             post.body_html = self._localize_images(post.body_html, img_dir, prefix)
             self._localize_comments(post.comments, img_dir, prefix)
@@ -223,7 +223,7 @@ class Site:
         self._render("index.html", out_dir / "index.html", posts=posts, og=site_og)
 
         for i, post in enumerate(posts):
-            page = out_dir / "posts" / str(post.number) / "index.html"
+            page = out_dir / str(post.number) / "index.html"
             newer = posts[i - 1] if i > 0 else None
             older = posts[i + 1] if i + 1 < len(posts) else None
             og = {

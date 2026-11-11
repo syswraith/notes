@@ -7,9 +7,9 @@
   <updated>{{ feed_updated }}</updated>
   {% for post in posts %}
   <entry>
-    <id>{{ absurl("posts/" ~ post.number ~ "/") }}</id>
+    <id>{{ absurl(post.number ~ "/") }}</id>
     <title>{{ post.title }}</title>
-    <link href="{{ absurl("posts/" ~ post.number ~ "/") }}"/>
+    <link href="{{ absurl(post.number ~ "/") }}"/>
     <published>{{ post.created_at }}</published>
     <updated>{{ post.updated_at or post.created_at }}</updated>
     <author><name>{{ post.author }}</name></author>
