@@ -76,7 +76,7 @@ def generate_thumbnail(post, site_url: str, out_dir: Path) -> str | None:
         )
     if favicon_path:
         children.append(
-            Row(Image(favicon_path).size(48, 48)).justify_content("flex_end").width(1200)
+            Row(Image(favicon_path).size(48, 48)).justify_content("end").width(1200)
         )
 
     layout = Column(*children).gap(32).padding(60).height(630)
