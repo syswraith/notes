@@ -7,7 +7,6 @@
     {% if post.description %}<div class="description">{{ post.description|safe }}</div>{% endif %}
     <p>
       <time datetime="{{ post.created_at }}">{{ post.created_at|datefmt }}</time>
-      {% if post.updated_at and post.updated_at != post.created_at %} &middot; updated <time datetime="{{ post.updated_at }}">{{ post.updated_at|datefmt }}</time>{% endif %}
     </p>
   </header>
   {{ post.body_html|safe }}

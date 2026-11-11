@@ -4,6 +4,8 @@ body > header {
 
 .description {
   font-style: italic;
+  font-size: 1.1em;
+  color: #111;
 }
 
 .timeline {
