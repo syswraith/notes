@@ -9,11 +9,7 @@ from urllib.parse import urlparse
 import requests
 
 try:
-<<<<<<< HEAD
-    from pictex import Canvas, Column, Row, Text, Image
-=======
     from pictex import Canvas, Column, Text, Image
->>>>>>> template/master
     _PICTEX_AVAILABLE = True
 except ModuleNotFoundError as e:
     if "pictex" in str(e):
@@ -80,11 +76,7 @@ def generate_thumbnail(post, site_url: str, out_dir: Path) -> str | None:
         )
     if favicon_path:
         children.append(
-<<<<<<< HEAD
-            Row(Image(favicon_path).size(48, 48)).justify_content("end").width(1200)
-=======
             Image(favicon_path).size(64, 64).absolute_position(right=30, bottom=30)
->>>>>>> template/master
         )
 
     layout = Column(*children).gap(32).padding(60).height(630)
