@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
+<nav class="breadcrumb"><a href="{{ tld }}">~</a> / <a href="{{ base }}">{{ repo }}</a></nav>
+<h1><a href="{{ base }}">{{ site_title }}</a></h1>
 <article>
   <ul class="timeline">
     {% for post in posts %}
@@ -13,4 +15,7 @@
     {% endfor %}
   </ul>
 </article>
+<nav class="bottom-links">
+  <a href="{{ base }}tags/">Tags</a> · <a href="{{ base }}feed.xml">Feed</a>
+</nav>
 {% endblock %}

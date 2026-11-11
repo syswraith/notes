@@ -60,9 +60,15 @@ Add the workflow (included in the template) to `.github/workflows/build.yml`. Af
 ## Writing posts
 
 > [!IMPORTANT]
+<<<<<<< HEAD
 > Change the "Issue Creation" from anyone to "Collaborators only" else anyone can create Issues!
 
 Open an issue in the repository. The issue title becomes the post title; the body becomes the post content. Use labels to tag posts. Close the issue to unpublish. 
+=======
+> Restrict issue creation to collaborators only else anyone can trigger a workflow by creating an issue!
+
+Open an issue in the repository. The issue title becomes the post title; the body becomes the post content. Use labels to tag posts. Close the issue to unpublish.
+>>>>>>> upstream/master
 
 Math works with `$...$` (inline) and `$$...$$` (block) delimiters via KaTeX.
 
