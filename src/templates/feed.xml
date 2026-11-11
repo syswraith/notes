@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>{{ site_title }}</title>
+  <id>{{ absurl("") }}</id>
+  <link href="{{ absurl("") }}"/>
+  <link rel="self" href="{{ absurl("feed.xml") }}"/>
+  <updated>{{ feed_updated }}</updated>
+  {% for post in posts %}
+  <entry>
+    <id>{{ absurl("posts/" ~ post.number ~ "/") }}</id>
+    <title>{{ post.title }}</title>
+    <link href="{{ absurl("posts/" ~ post.number ~ "/") }}"/>
+    <published>{{ post.created_at }}</published>
+    <updated>{{ post.updated_at or post.created_at }}</updated>
+    <author><name>{{ post.author }}</name></author>
+    <content type="html">{{ post.body_html }}</content>
+  </entry>
+  {% endfor %}
+</feed>
