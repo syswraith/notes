@@ -1,4 +1,4 @@
-# Notes
+# Riff
 
 A minimal static site generator that publishes [microblogs](https://en.wikipedia.org/wiki/Microblogging) from GitHub Issues. Open an issue to publish; close it to unpublish. Labels become tags; comments become threaded replies.
 
