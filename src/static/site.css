@@ -32,13 +32,13 @@ article header h1 {
 }
 
 article header {
-  border-bottom: 2px solid #000;
+  border-bottom: 2px solid #777;
   padding-bottom: 8px;
   margin-bottom: 12px;
 }
 
 h2#comments {
-  border-top: 2px solid #000;
+  border-top: 2px solid #777;
   padding-top: 12px;
   margin-top: 24px;
 }
@@ -46,7 +46,7 @@ h2#comments {
 .description {
   font-style: italic;
   font-size: 1.25em;
-  color: #000;
+  color: #555;
 }
 
 .timeline {
@@ -125,6 +125,10 @@ h2#comments {
   align-items: center;
   font-weight: bold;
   font-size: 0.85em;
+}
+
+.markdown-alert.markdown-alert-note > p.markdown-alert-title > svg {
+  padding-right: 0.5em;
 }
 
 .markdown-alert-note { border-color: #0969da; }
