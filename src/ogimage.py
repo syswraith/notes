@@ -10,7 +10,15 @@ import requests
 try:
     from pictex import Canvas, Column, Text, Image
     _PICTEX_AVAILABLE = True
-except Exception:  # pragma: no cover - pictex may not be installed yet
+except ModuleNotFoundError as e:
+    if "pictex" in str(e):
+        print(f"  ! pictex not installed: {e}", file=sys.stderr)
+    else:
+        raise
+    Canvas = Column = Text = Image = None
+    _PICTEX_AVAILABLE = False
+except Exception as e:
+    print(f"  ! pictex import failed: {e}", file=sys.stderr)
     Canvas = Column = Text = Image = None
     _PICTEX_AVAILABLE = False
 

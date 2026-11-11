@@ -293,6 +293,7 @@ dependencies = [
     { name = "jinja2" },
     { name = "pictex" },
     { name = "requests" },
+    { name = "skia-python" },
 ]
 
 [package.metadata]
@@ -300,6 +301,7 @@ requires-dist = [
     { name = "jinja2", specifier = ">=3.1.6" },
     { name = "pictex", specifier = ">=2.0.0" },
     { name = "requests", specifier = ">=2.34.2" },
+    { name = "skia-python" },
 ]
 
 [[package]]
