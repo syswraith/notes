@@ -62,8 +62,8 @@ body > header {
   margin: 1em 0 0;
 }
 
-.comment header p {
-  margin: 0 0 0.75em;
+.comment p {
+  margin: 0;
 }
 
 .contains-task-list {
