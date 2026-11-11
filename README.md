@@ -59,7 +59,10 @@ Add the workflow (included in the template) to `.github/workflows/build.yml`. Af
 
 ## Writing posts
 
-Open an issue in the repository. The issue title becomes the post title; the body becomes the post content. Use labels to tag posts. Close the issue to unpublish.
+> [!IMPORTANT]
+> Change the "Issue Creation" from anyone to "Collaborators only" else anyone can create Issues!
+
+Open an issue in the repository. The issue title becomes the post title; the body becomes the post content. Use labels to tag posts. Close the issue to unpublish. 
 
 Math works with `$...$` (inline) and `$$...$$` (block) delimiters via KaTeX.
 
