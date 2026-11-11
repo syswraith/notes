@@ -19,7 +19,8 @@ A minimal static site generator that publishes [microblogs](https://en.wikipedia
 - **Images** uploaded to issues are downloaded at build time and served locally — no short-lived signed URLs.
 - **Math** (`$...$`, `$$...$$`, `\[...\]`, `\( \)`) renders client-side via KaTeX.
 - **Feed**: Atom feed at `feed.xml`.
-- **OpenGraph**: per-post `thumbnail.svg` generated at build time with [pictex](https://pictex.readthedocs.io/), stored under `dist/{issue-number}/images/thumbnail.svg` and exposed as `og:image`.
+- **OpenGraph**: per-post `thumbnail.png` generated at build time with [pictex](https://pictex.readthedocs.io/), stored under `dist/{issue-number}/images/thumbnail.png` and exposed as `og:image` with `twitter:card: summary_large_image`.
+- **404 page**: custom `dist/404.html` served automatically by GitHub Pages for missing routes.
 
 ## Local setup
 
@@ -43,6 +44,8 @@ python -m http.server 8000 -d dist
 | `SITE_TITLE` | No | Site title. Defaults to `"{USER}'s {REPO}"`. |
 | `SITE_DESCRIPTION` | No | Site description used on the homepage. |
 | `GITHUB_TOKEN` | No | Authenticated GitHub API access (5000/hr vs 60/hr unauthenticated). Provided automatically in Actions. |
+
+> **Note:** `SITE_URL` must be a publicly reachable URL (not `localhost`) for Discord, Twitter, and other link-preview crawlers to fetch `og:image`. Locally you can use `http://localhost:8000` for testing, but thumbnails won't appear in embeds until the site is deployed to a public URL.
 
 ## Deployment
 
@@ -68,7 +71,7 @@ src/
   github.py      # GitHub API client
   render.py      # Dataclasses, comment threading, site renderer
   ogimage.py     # OpenGraph thumbnail generation (pictex)
-  templates/     # Jinja2 templates (base, index, post, tags, feed)
+  templates/     # Jinja2 templates (base, index, post, tags, feed, 404)
   static/        # awsm.css, site.css, syntax.css
 dist/            # Generated output (gitignored)
 ```
