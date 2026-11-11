@@ -31,6 +31,8 @@ jobs:
       - uses: astral-sh/setup-uv@v5
       - id: pages
         uses: actions/configure-pages@v5
+        with:
+          enablement: true
       - run: uv sync --frozen
       - run: uv run python src/main.py
         env:
