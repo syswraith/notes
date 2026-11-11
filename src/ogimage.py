@@ -4,22 +4,23 @@ import sys
 import tempfile
 from html import unescape
 from pathlib import Path
+from urllib.parse import urlparse
 
 import requests
 
 try:
-    from pictex import Canvas, Column, Text, Image
+    from pictex import Canvas, Column, Row, Text, Image
     _PICTEX_AVAILABLE = True
 except ModuleNotFoundError as e:
     if "pictex" in str(e):
         print(f"  ! pictex not installed: {e}", file=sys.stderr)
     else:
         raise
-    Canvas = Column = Text = Image = None
+    Canvas = Column = Row = Text = Image = None
     _PICTEX_AVAILABLE = False
 except Exception as e:
     print(f"  ! pictex import failed: {e}", file=sys.stderr)
-    Canvas = Column = Text = Image = None
+    Canvas = Column = Row = Text = Image = None
     _PICTEX_AVAILABLE = False
 
 
@@ -30,10 +31,11 @@ def _plain(html: str) -> str:
 
 def _download_favicon(site_url: str) -> str | None:
     '''
-    Download the site favicon from SITE_URL to a temp file.
+    Download the site favicon from the domain root of SITE_URL to a temp file.
     Returns the local path, or None if unavailable.
     '''
-    base = site_url.rstrip("/")
+    parsed = urlparse(site_url)
+    base = f"{parsed.scheme}://{parsed.netloc}"
     for ext in ("ico", "png", "svg"):
         url = f"{base}/favicon.{ext}"
         try:
@@ -74,7 +76,7 @@ def generate_thumbnail(post, site_url: str, out_dir: Path) -> str | None:
         )
     if favicon_path:
         children.append(
-            Image(favicon_path).size(48, 48).absolute_position(right=40, bottom=40)
+            Row(Image(favicon_path).size(48, 48)).justify_content("flex_end").width(1200)
         )
 
     layout = Column(*children).gap(32).padding(60).height(630)
