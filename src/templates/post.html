@@ -22,7 +22,7 @@
 <h2 id="comments">{{ post.comments|count_comments }} comment{{ post.comments|count_comments|plural }}</h2>
 {% macro render_comment(comment) %}
 <article class="comment">
-  <p><a href="{{ comment.author_url }}">{{ comment.author }}</a>: {{ comment.body_html|safe }} <time datetime="{{ comment.created_at }}">{{ comment.created_at|datefmt }}</time></p>
+  <p><a href="{{ comment.author_url }}">{{ comment.author }}</a>: {{ comment.body_html|safe }}</p>
   {% for reply in comment.replies %}
   {{ render_comment(reply) }}
   {% endfor %}
