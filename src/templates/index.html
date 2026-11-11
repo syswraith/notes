@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<article>
+  <ul class="timeline">
+    {% for post in posts %}
+    <li>
+      <a href="{{ base }}{{ post.number }}/">
+        <time datetime="{{ post.created_at }}">{{ post.created_at|datefmt }}</time> {{ post.title }}
+      </a>
+    </li>
+    {% else %}
+    <li>Nothing here yet. Open an issue to publish a post.</li>
+    {% endfor %}
+  </ul>
+</article>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Tags &middot; {{ site_title }}{% endblock %}
+{% block content %}
+<article>
+  <h1>Tags</h1>
+  {% for tag, tag_posts in tags.items() %}
+  <section id="{{ tag|anchor }}">
+    <h2>{{ tag }} <small>({{ tag_posts|length }})</small></h2>
+    <ul>
+      {% for post in tag_posts %}
+      <li>
+        <a href="{{ base }}{{ post.number }}/">{{ post.title }}</a>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% else %}
+  <p>No tags yet.</p>
+  {% endfor %}
+</article>
+{% endblock %}

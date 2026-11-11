@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}{{ post.title }} &middot; {{ site_title }}{% endblock %}
+{% block content %}
+<article>
+  <header>
+    <h1>{{ post.title }}</h1>
+    {% if post.description %}<div class="description">{{ post.description|safe }}</div>{% endif %}
+    <p>
+      <time datetime="{{ post.created_at }}">{{ post.created_at|datefmt }}</time>
+    </p>
+  </header>
+  {{ post.body_html|safe }}
+</article>
+
+{% if newer or older %}
+<nav class="pager">
+  {% if newer %}<a href="{{ base }}{{ newer.number }}/" title="{{ newer.title }}">&larr; Newer</a>{% endif %}
+  {% if older %}<a href="{{ base }}{{ older.number }}/" title="{{ older.title }}">Older &rarr;</a>{% endif %}
+</nav>
+{% endif %}
+
+<h2 id="comments">{{ post.comments|count_comments }} comment{{ post.comments|count_comments|plural }}</h2>
+{% macro render_comment(comment) %}
+<article class="comment">
+  <p><a href="{{ comment.author_url }}">{{ comment.author }}</a>: {{ comment.body_html|safe }}</p>
+  {% for reply in comment.replies %}
+  {{ render_comment(reply) }}
+  {% endfor %}
+</article>
+{% endmacro %}
+{% for comment in post.comments %}
+{{ render_comment(comment) }}
+{% endfor %}
+<p><a href="{{ post.url }}#issue-comment-box">reply on GitHub</a></p>
+{% endblock %}

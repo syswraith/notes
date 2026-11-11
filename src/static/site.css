@@ -1,0 +1,143 @@
+body > header,
+body > main,
+article {
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+body > header {
+  margin-bottom: 1.5em;
+}
+
+nav {
+  text-align: left;
+  margin-bottom: 1.5em;
+}
+
+nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: inline-flex;
+  gap: 1.5em;
+}
+
+body > header h1 {
+  font-size: 24px;
+}
+
+article header h1 {
+  font-size: 32px;
+}
+
+article header {
+  border-bottom: 2px solid #777;
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+}
+
+h2#comments {
+  border-top: 2px solid #777;
+  padding-top: 12px;
+  margin-top: 24px;
+}
+
+.description {
+  font-style: italic;
+  font-size: 1.25em;
+  color: #555;
+}
+
+.timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.timeline a {
+  display: block;
+  padding: 0.35em 0.25em;
+  text-decoration: none;
+}
+
+.timeline a:hover,
+.timeline a:focus {
+  background: #f0f0f0;
+}
+
+.timeline li + li {
+  border-top: 1px solid #e5e5e5;
+}
+
+.timeline time {
+  color: #777;
+}
+
+.pager {
+  display: flex;
+  justify-content: space-between;
+  gap: 1em;
+  margin: 2.5em 0;
+}
+
+.pager a {
+  border: 1px solid #aaa;
+  border-radius: 4px;
+  padding: 0.3em 0.8em;
+  text-decoration: none;
+}
+
+.pager a:hover {
+  border-color: #666;
+}
+
+.comment {
+  border-left: 2px solid #ddd;
+  padding-left: 1.5em;
+}
+
+.comment + .comment {
+  margin-top: 1.5em;
+}
+
+.comment .comment {
+  margin: 1em 0 0;
+}
+
+.comment p {
+  margin: 0;
+}
+
+.contains-task-list {
+  list-style: none;
+  padding-left: 1.5em;
+}
+
+.markdown-alert {
+  border-left: 0.25em solid;
+  padding: 0.25em 0.75em;
+  margin: 1em 0;
+}
+
+.markdown-alert-title {
+  display: inline-flex;
+  align-items: center;
+  font-weight: bold;
+  font-size: 0.85em;
+}
+
+.markdown-alert.markdown-alert-note > p.markdown-alert-title > svg {
+  padding-right: 0.5em;
+}
+
+.markdown-alert-note { border-color: #0969da; }
+.markdown-alert-note .markdown-alert-title { color: #0969da; }
+.markdown-alert-tip { border-color: #1a7f37; }
+.markdown-alert-tip .markdown-alert-title { color: #1a7f37; }
+.markdown-alert-important { border-color: #8250df; }
+.markdown-alert-important .markdown-alert-title { color: #8250df; }
+.markdown-alert-warning { border-color: #9a6700; }
+.markdown-alert-warning .markdown-alert-title { color: #9a6700; }
+.markdown-alert-caution { border-color: #cf222e; }
+.markdown-alert-caution .markdown-alert-title { color: #cf222e; }
