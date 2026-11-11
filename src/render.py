@@ -271,6 +271,8 @@ class Site:
         self._render("tags.html", out_dir / "tags.html", tags=tags, og=tags_og)
         self._render("tags.html", out_dir / "tags" / "index.html", tags=tags, og=tags_og)
 
+        self._render("404.html", out_dir / "404.html", og={"title": f"404 · {self.title}", "url": self.absurl("404.html"), "type": "website"})
+
         feed_updated = max(
                 (p.updated_at or p.created_at for p in posts),
                 default=datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
