@@ -3,13 +3,13 @@ import sys
 from pathlib import Path
 
 from github import Github
+from htmlutil import strip_toc
 from render import (
         Comment,
         Post,
         Site,
         count_comments,
         split_description,
-        strip_toc,
         thread_comments,
         )
 
@@ -18,6 +18,7 @@ if not repo_full:
     sys.exit("GITHUB_REPOSITORY is not set. Set it to owner/repo; GitHub Actions provides it automatically.")
 USER, REPO = repo_full.split("/", 1)
 OUT_DIR = Path(__file__).parent.parent / "dist"
+PUBLISH_LABEL = os.getenv("PUBLISH_LABEL", "publish").strip()
 
 
 def build_post(client: Github, issue: dict) -> Post:
@@ -26,7 +27,6 @@ def build_post(client: Github, issue: dict) -> Post:
             Comment(
                 author=c["user"]["login"],
                 author_url=c["user"]["html_url"],
-                created_at=c["created_at"],
                 body_html=c.get("body_html") or "",
                 )
             for c in raw
@@ -39,7 +39,7 @@ def build_post(client: Github, issue: dict) -> Post:
             created_at=issue["created_at"],
             updated_at=issue["updated_at"],
             url=issue["html_url"],
-            tags=client.tags(issue),
+            tags=client.tags(issue, PUBLISH_LABEL or None),
             description=description,
             body_html=strip_toc(body_html),
             comments=comments,
@@ -52,7 +52,7 @@ def main():
 
     client = Github(USER, REPO)
     print(f"Fetching open issues from {USER}/{REPO}...")
-    issues = client.blog(n=100)
+    issues = client.blog(PUBLISH_LABEL or None)
 
     posts = []
     for issue in issues:

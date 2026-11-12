@@ -11,25 +11,24 @@ from urllib.parse import urlparse
 import requests
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from ogimage import generate_thumbnail
+from htmlutil import absolutize_html, leading_blockquote, rewrite_urls, text_content
+from ogimage import download_favicon, generate_thumbnail
 
 SRC_DIR = Path(__file__).parent
 TEMPLATES_DIR = SRC_DIR / "templates"
 STATIC_DIR = SRC_DIR / "static"
 
-QUOTE_RE = re.compile(r"^\s*<blockquote>(.*?)</blockquote>", re.DOTALL)
-TOC_RE = re.compile(
-        r'<h2[^>]*>\s*Table of Contents\s*</h2>\s*<ol[^>]*>.*?</ol>',
-        re.DOTALL | re.IGNORECASE,
+IMAGE_URL_RE = re.compile(
+        r'https?://(?:private-user-images|user-images)\.githubusercontent\.com/'
+        r'|https?://github\.com/user-attachments/assets/',
+        re.IGNORECASE,
         )
-URL_RE = re.compile(r'https://private-user-images\.githubusercontent\.com/[^"\s]+')
 
 
 @dataclass
 class Comment:
     author: str
     author_url: str
-    created_at: str
     body_html: str
     replies: list["Comment"] = field(default_factory=list)
 
@@ -55,9 +54,44 @@ def datefmt(iso: str) -> str:
         return (iso or "")[:10]
 
 
+def latest_updated(posts: list["Post"]) -> str:
+    timestamps = []
+    for post in posts:
+        value = post.updated_at or post.created_at
+        if not value:
+            continue
+        try:
+            parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        except ValueError:
+            continue
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=timezone.utc)
+        timestamps.append(parsed)
+    latest = max(timestamps, default=datetime.now(timezone.utc))
+    return latest.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
 def anchor(name: str) -> str:
     slug = "".join(c if c.isalnum() else "-" for c in name.lower()).strip("-")
     return slug or "tag"
+
+
+def tag_anchor_map(posts: list["Post"]) -> dict[str, str]:
+    anchors: dict[str, str] = {}
+    used: set[str] = set()
+    for post in posts:
+        for tag in post.tags:
+            if tag in anchors:
+                continue
+            base = anchor(tag)
+            candidate = base
+            suffix = 2
+            while candidate in used:
+                candidate = f"{base}-{suffix}"
+                suffix += 1
+            anchors[tag] = candidate
+            used.add(candidate)
+    return anchors
 
 
 def plural(n: int) -> str:
@@ -65,8 +99,11 @@ def plural(n: int) -> str:
 
 
 def _plain(html: str) -> str:
-    text = unescape(re.sub(r"<[^>]+>", " ", html))
-    return re.sub(r"\s+", " ", text).replace("…", "").strip()
+    return text_content(html)
+
+
+def cdata(text: str) -> str:
+    return text.replace("]]>", "]]]]><![CDATA[>")
 
 
 def _is_quote_reply(quote: str, earlier: str) -> bool:
@@ -83,21 +120,22 @@ def thread_comments(comments: list[Comment]) -> list[Comment]:
     Detect those, strip the quote and nest them under their parent.
     '''
     roots: list[Comment] = []
-    seen: list[Comment] = []
+    seen: list[tuple[Comment, str]] = []
     for comment in comments:
+        original = comment.body_html
+        quote, remainder = leading_blockquote(original)
         parent = None
-        quote = QUOTE_RE.match(comment.body_html)
-        if quote:
-            for prev in reversed(seen):
-                if _is_quote_reply(quote.group(1), prev.body_html):
+        if quote is not None:
+            for prev, prev_original in reversed(seen):
+                if _is_quote_reply(quote, prev.body_html) or _is_quote_reply(quote, prev_original):
                     parent = prev
                     break
         if parent is None:
             roots.append(comment)
         else:
-            comment.body_html = comment.body_html[quote.end():].lstrip()
+            comment.body_html = remainder.lstrip()
             parent.replies.append(comment)
-        seen.append(comment)
+        seen.append((comment, original))
     return roots
 
 
@@ -115,17 +153,10 @@ def split_description(body_html: str) -> tuple[str, str]:
     '''
     pull the leading blockquote out of a post body: (description, rest)
     '''
-    quote = QUOTE_RE.match(body_html)
-    if not quote:
+    quote, remainder = leading_blockquote(body_html)
+    if quote is None:
         return "", body_html
-    return quote.group(1), body_html[quote.end():].lstrip()
-
-
-def strip_toc(body_html: str) -> str:
-    '''
-    remove the hand-written "Table of Contents" heading and list
-    '''
-    return TOC_RE.sub("", body_html)
+    return quote, remainder.lstrip()
 
 
 def _clip(text: str, limit: int = 200) -> str:
@@ -147,8 +178,6 @@ class Site:
     def __init__(self, title: str, user: str, repo: str, site_url: str, description: str = ""):
         self.title = title
         self.description = description
-        self.user = user
-        self.repo = repo
         self.site_url = site_url.rstrip("/")
         path = urlparse(self.site_url).path.strip("/")
         self.base = f"/{path}/" if path else "/"
@@ -161,7 +190,13 @@ class Site:
                 trim_blocks=True,
                 lstrip_blocks=True,
                 )
-        self.env.filters.update(datefmt=datefmt, anchor=anchor, plural=plural, count_comments=count_comments)
+        self.env.filters.update(
+                datefmt=datefmt,
+                plural=plural,
+                count_comments=count_comments,
+                absolutize=self.absolutize,
+                cdata=cdata,
+                )
         self.env.globals.update(
                 site_title=title,
                 user=user,
@@ -177,6 +212,9 @@ class Site:
             return f"{site}/{rel.lstrip('/')}"
         return f"{site}/"
 
+    def absolutize(self, html: str) -> str:
+        return absolutize_html(html, self.tld)
+
     def _render(self, template: str, out: Path, **context):
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_text(self.env.get_template(template).render(**context))
@@ -184,25 +222,31 @@ class Site:
     def _localize_images(self, html: str, img_dir: Path, prefix: str) -> str:
         '''
         GitHub serves user-uploaded images from short-lived signed URLs;
-        download them and point every src, href or srcset at the local copy
+        download them and point every src, href or srcset at the local copy.
+        Images that cannot be copied locally are dropped rather than left
+        pointing at an expiring URL.
         '''
-        def localize(match: re.Match) -> str:
-            url = match.group(0)
-            path = urlparse(url).path
-            name = f"{hashlib.sha1(path.encode()).hexdigest()[:16]}{Path(path).suffix or '.png'}"
+        def localize(url: str, attr: str) -> str | None:
+            remote = unescape(url)
+            signed = attr in {"poster", "src", "srcset"} and "jwt=" in remote.lower()
+            if not (IMAGE_URL_RE.match(remote) or signed):
+                return url
+            path = urlparse(remote).path
+            key = f"{urlparse(remote).netloc}{path}"
+            name = f"{hashlib.sha1(key.encode()).hexdigest()[:16]}{Path(path).suffix or '.png'}"
             target = img_dir / name
             if not target.exists():
                 try:
-                    response = requests.get(unescape(url), timeout=30)
+                    response = requests.get(remote, timeout=30)
                     response.raise_for_status()
                     img_dir.mkdir(parents=True, exist_ok=True)
                     target.write_bytes(response.content)
                 except (requests.RequestException, OSError) as e:
-                    print(f"  ! keeping remote image {name}: {e}", file=sys.stderr)
-                    return match.group(0)
+                    print(f"  ! dropping image {name}: {e}", file=sys.stderr)
+                    return None
             return f"{prefix}{name}"
 
-        return URL_RE.sub(localize, html)
+        return rewrite_urls(html, localize)
 
     def _localize_comments(self, comments: list[Comment], img_dir: Path, prefix: str):
         for comment in comments:
@@ -215,13 +259,26 @@ class Site:
         shutil.copytree(STATIC_DIR, out_dir / "static")
 
         site_url = site_url or self.site_url
+        favicon = download_favicon(site_url)
         thumbs: dict[int, str] = {}
-        for post in posts:
-            thumb = generate_thumbnail(post, site_url, out_dir)
-            if thumb:
-                thumbs[post.number] = thumb
+        try:
+            for post in posts:
+                try:
+                    thumb = generate_thumbnail(post, out_dir, favicon)
+                except Exception as e:
+                    print(f"  ! skipping thumbnail for #{post.number}: {e}", file=sys.stderr)
+                    thumb = None
+                if thumb:
+                    thumbs[post.number] = thumb
+        finally:
+            if favicon:
+                try:
+                    Path(favicon).unlink()
+                except OSError:
+                    pass
 
         site_thumb = next(iter(thumbs.values()), None)
+        tag_anchors = tag_anchor_map(posts)
 
         for post in posts:
             img_dir = out_dir / str(post.number) / "images"
@@ -256,7 +313,7 @@ class Site:
             thumb = thumbs.get(post.number)
             if thumb:
                 og["image"] = self.absurl(thumb)
-            self._render("post.html", page, post=post, newer=newer, older=older, og=og)
+            self._render("post.html", page, post=post, newer=newer, older=older, og=og, tag_anchors=tag_anchors)
 
         tags: dict[str, list[Post]] = {}
         for post in posts:
@@ -264,20 +321,28 @@ class Site:
                 tags.setdefault(tag, []).append(post)
         tags_og = {
                 "title": f"Tags · {self.title}",
-                "url": self.absurl("tags.html"),
                 "type": "website",
                 "description": self.description,
                 "tags": [],
                 }
         if site_thumb:
             tags_og["image"] = self.absurl(site_thumb)
-        self._render("tags.html", out_dir / "tags.html", tags=tags, og=tags_og)
-        self._render("tags.html", out_dir / "tags" / "index.html", tags=tags, og=tags_og)
+        self._render(
+                "tags.html",
+                out_dir / "tags.html",
+                tags=tags,
+                og={**tags_og, "url": self.absurl("tags.html")},
+                tag_anchors=tag_anchors,
+                )
+        self._render(
+                "tags.html",
+                out_dir / "tags" / "index.html",
+                tags=tags,
+                og={**tags_og, "url": self.absurl("tags/")},
+                tag_anchors=tag_anchors,
+                )
 
         self._render("404.html", out_dir / "404.html", og={"title": f"404 · {self.title}", "url": self.absurl("404.html"), "type": "website"})
 
-        feed_updated = max(
-                (p.updated_at or p.created_at for p in posts),
-                default=datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
-                )
+        feed_updated = latest_updated(posts)
         self._render("feed.xml", out_dir / "feed.xml", posts=posts, feed_updated=feed_updated)

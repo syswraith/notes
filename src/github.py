@@ -14,15 +14,31 @@ class Github:
         return headers
 
     def __init__(self, user: str, repo: str):
-        self.user = user
-        self.repo = repo
         self.base_url = f"https://api.github.com/repos/{user}/{repo}"
 
-    def tags(self, issue) -> list[str]:
+    def _get_all(self, url: str, accept: str, params: dict | None = None) -> list[dict]:
+        '''
+        follow GitHub's pagination links and return every item
+        '''
+        params = dict(params or {}, per_page=100)
+        items: list[dict] = []
+        while url:
+            response = requests.get(url, headers=self._get_headers(accept), params=params, timeout=30)
+            response.raise_for_status()
+            items.extend(response.json())
+            url = response.links.get("next", {}).get("url")
+            params = None
+        return items
+
+    def tags(self, issue, exclude: str | None = None) -> list[str]:
         '''
         get the labels associated with the issue
         '''
-        return [label["name"] for label in issue.get("labels", [])]
+        return [
+                label["name"]
+                for label in issue.get("labels", [])
+                if not exclude or label["name"].casefold() != exclude.casefold()
+                ]
 
     def comments(self, issue_id: int):
         '''
@@ -30,50 +46,28 @@ class Github:
         bodies pre-rendered as HTML in body_html
         '''
         url = f"{self.base_url}/issues/{issue_id}/comments"
-        headers = self._get_headers("application/vnd.github.full+json")
-        response = requests.get(url, headers=headers)
-        response.raise_for_status()
-        return response.json()
+        return self._get_all(url, "application/vnd.github.full+json")
 
-    def blog(self, n: int = 10):
+    def blog(self, label: str | None = None):
         '''
-        get open, non-pull-request issues, newest first,
+        get all open, non-pull-request issues, newest first,
+        optionally restricted to issues carrying the given label;
         bodies available as raw markdown (body) and HTML (body_html)
         '''
         url = f"{self.base_url}/issues"
         params = {
-                "per_page": n,
                 "sort": "created",
                 "direction": "desc",
                 "state": "open"
                 }
-        headers = self._get_headers("application/vnd.github.full+json")
-        response = requests.get(url, headers=headers, params=params)
-        response.raise_for_status()
-        return [i for i in response.json() if "pull_request" not in i]
-
-    def get_post_markdown(self, issue, tags: list[str]) -> str:
-        """
-        Takes an issue dictionary and returns a single Markdown string
-        containing YAML frontmatter and the issue body (no comments).
-        """
-        if tags is None:
-            tags = [label["name"] for label in issue.get("labels", [])]
-
-        title = issue.get("title", "Untitled")
-        date = issue.get("created_at", "")[:10]
-        updated_at = issue.get("updated_at", "")[:10]
-        url = issue.get("html_url", "")
-        body = issue.get("body", "")
-
-        # Construct YAML Frontmatter
-        frontmatter = "---\n"
-        frontmatter += f'title: "{title}"\n'
-        frontmatter += f'date: "{date}"\n'
-        if updated_at and updated_at != date:
-            frontmatter += f'updated_at: "{updated_at}"\n'
-        frontmatter += f'url: "{url}"\n'
-        frontmatter += f'tags: {tags}\n'
-        frontmatter += "---\n\n"
-
-        return frontmatter + body
+        if label:
+            params["labels"] = label
+        return [
+                issue
+                for issue in self._get_all(url, "application/vnd.github.full+json", params)
+                if "pull_request" not in issue
+                and (
+                    not label
+                    or any(name.casefold() == label.casefold() for name in self.tags(issue))
+                    )
+                ]
