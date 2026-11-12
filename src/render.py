@@ -11,13 +11,13 @@ from urllib.parse import urlparse
 import requests
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
+from htmlutil import leading_blockquote, text_content
 from ogimage import generate_thumbnail
 
 SRC_DIR = Path(__file__).parent
 TEMPLATES_DIR = SRC_DIR / "templates"
 STATIC_DIR = SRC_DIR / "static"
 
-QUOTE_RE = re.compile(r"^\s*<blockquote>(.*?)</blockquote>", re.DOTALL)
 TOC_RE = re.compile(
         r'<h2[^>]*>\s*Table of Contents\s*</h2>\s*<ol[^>]*>.*?</ol>',
         re.DOTALL | re.IGNORECASE,
@@ -65,8 +65,7 @@ def plural(n: int) -> str:
 
 
 def _plain(html: str) -> str:
-    text = unescape(re.sub(r"<[^>]+>", " ", html))
-    return re.sub(r"\s+", " ", text).replace("…", "").strip()
+    return text_content(html)
 
 
 def _is_quote_reply(quote: str, earlier: str) -> bool:
@@ -83,21 +82,22 @@ def thread_comments(comments: list[Comment]) -> list[Comment]:
     Detect those, strip the quote and nest them under their parent.
     '''
     roots: list[Comment] = []
-    seen: list[Comment] = []
+    seen: list[tuple[Comment, str]] = []
     for comment in comments:
+        original = comment.body_html
+        quote, remainder = leading_blockquote(original)
         parent = None
-        quote = QUOTE_RE.match(comment.body_html)
-        if quote:
-            for prev in reversed(seen):
-                if _is_quote_reply(quote.group(1), prev.body_html):
+        if quote is not None:
+            for prev, prev_original in reversed(seen):
+                if _is_quote_reply(quote, prev.body_html) or _is_quote_reply(quote, prev_original):
                     parent = prev
                     break
         if parent is None:
             roots.append(comment)
         else:
-            comment.body_html = comment.body_html[quote.end():].lstrip()
+            comment.body_html = remainder.lstrip()
             parent.replies.append(comment)
-        seen.append(comment)
+        seen.append((comment, original))
     return roots
 
 
@@ -115,10 +115,10 @@ def split_description(body_html: str) -> tuple[str, str]:
     '''
     pull the leading blockquote out of a post body: (description, rest)
     '''
-    quote = QUOTE_RE.match(body_html)
-    if not quote:
+    quote, remainder = leading_blockquote(body_html)
+    if quote is None:
         return "", body_html
-    return quote.group(1), body_html[quote.end():].lstrip()
+    return quote, remainder.lstrip()
 
 
 def strip_toc(body_html: str) -> str:
