@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Tags &middot; {{ site_title }}{% endblock %}
 {% block content %}
-<nav class="breadcrumb"><a href="{{ tld }}">~</a> / <a href="{{ base }}">{{ repo }}</a> / Tags</nav>
+<nav class="breadcrumb"><a href="{{ tld }}">~</a> / <a href="{{ base }}">{{ repo }}</a> / <a href="{{ base }}tags/">Tags</a></nav>
 <article>
   <h1>Tags</h1>
   {% for tag, tag_posts in tags.items() %}
