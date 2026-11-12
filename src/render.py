@@ -202,11 +202,14 @@ class Site:
     def _localize_images(self, html: str, img_dir: Path, prefix: str) -> str:
         '''
         GitHub serves user-uploaded images from short-lived signed URLs;
-        download them and point every src, href or srcset at the local copy
+        download them and point every src, href or srcset at the local copy.
+        Images that cannot be copied locally are dropped rather than left
+        pointing at an expiring URL.
         '''
-        def localize(url: str) -> str:
+        def localize(url: str, attr: str) -> str | None:
             remote = unescape(url)
-            if not IMAGE_URL_RE.match(remote):
+            signed = attr in {"poster", "src", "srcset"} and "jwt=" in remote.lower()
+            if not (IMAGE_URL_RE.match(remote) or signed):
                 return url
             path = urlparse(remote).path
             key = f"{urlparse(remote).netloc}{path}"
@@ -219,8 +222,8 @@ class Site:
                     img_dir.mkdir(parents=True, exist_ok=True)
                     target.write_bytes(response.content)
                 except (requests.RequestException, OSError) as e:
-                    print(f"  ! keeping remote image {name}: {e}", file=sys.stderr)
-                    return url
+                    print(f"  ! dropping image {name}: {e}", file=sys.stderr)
+                    return None
             return f"{prefix}{name}"
 
         return rewrite_urls(html, localize)

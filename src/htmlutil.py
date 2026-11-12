@@ -9,9 +9,11 @@ ATTRIBUTE_RE = re.compile(
         )
 
 
-def rewrite_urls(html: str, callback: Callable[[str], str]) -> str:
+def rewrite_urls(html: str, callback: Callable[[str, str], str | None]) -> str:
     '''
-    rewrite URLs in href/src/poster/srcset attributes, leaving other text alone
+    rewrite URLs in href/src/poster/srcset attributes, leaving other text alone.
+    callback receives (url, attribute); returning None removes the attribute
+    (or just that srcset candidate).
     '''
     parser = _UrlRewriteParser(callback)
     parser.feed(html or "")
@@ -25,7 +27,7 @@ def absolutize_html(html: str, origin: str) -> str:
     '''
     origin = origin.rstrip("/")
 
-    def absolutize(url: str) -> str:
+    def absolutize(url: str, attr: str) -> str:
         return f"{origin}{url}" if url.startswith("/") else url
 
     return rewrite_urls(html, absolutize)
@@ -56,7 +58,7 @@ def leading_blockquote(html: str) -> tuple[str | None, str]:
 
 
 class _UrlRewriteParser(HTMLParser):
-    def __init__(self, callback: Callable[[str], str]):
+    def __init__(self, callback: Callable[[str, str], str | None]):
         super().__init__(convert_charrefs=False)
         self.callback = callback
         self.parts: list[str] = []
@@ -97,20 +99,28 @@ class _UrlRewriteParser(HTMLParser):
             name = prefix.split("=", 1)[0].strip().lower()
             if name == "srcset":
                 value = self._rewrite_srcset(value)
+                if value is None:
+                    return ""
             else:
-                value = self.callback(value)
+                value = self.callback(value, name)
+                if value is None:
+                    return ""
             return f"{prefix}{quote}{value}{quote}"
 
         return ATTRIBUTE_RE.sub(replace, raw)
 
-    def _rewrite_srcset(self, value: str) -> str:
+    def _rewrite_srcset(self, value: str) -> str | None:
         parts = []
         for candidate in value.split(","):
             match = re.match(r"^(\s*)(\S+)(.*)$", candidate, re.DOTALL)
             if match:
-                candidate = f"{match.group(1)}{self.callback(match.group(2))}{match.group(3)}"
+                url = self.callback(match.group(2), "srcset")
+                if url is None:
+                    continue
+                candidate = f"{match.group(1)}{url}{match.group(3)}"
             parts.append(candidate)
-        return ",".join(parts)
+        value = ",".join(parts).strip()
+        return value or None
 
 
 class _TextParser(HTMLParser):
