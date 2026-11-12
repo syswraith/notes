@@ -123,6 +123,142 @@ class _UrlRewriteParser(HTMLParser):
         return value or None
 
 
+def strip_toc(html: str) -> str:
+    '''
+    remove a hand-written "Table of Contents" heading and its balanced list
+    '''
+    parser = _TocStripper()
+    parser.feed(html or "")
+    parser.close()
+    return "".join(parser.parts)
+
+
+class _TocStripper(HTMLParser):
+    def __init__(self):
+        super().__init__(convert_charrefs=False)
+        self.parts: list[str] = []
+        self.state = "normal"
+        self.h2_parts: list[str] = []
+        self.h2_depth = 0
+        self.pending: list[str] = []
+        self.list_depth = 0
+
+    def handle_starttag(self, tag: str, attrs):
+        name = tag.lower()
+        raw = self.get_starttag_text()
+        if self.state == "collecting_h2":
+            if name == "h2":
+                self.h2_depth += 1
+            self.h2_parts.append(raw)
+            return
+        if self.state == "pending_heading":
+            if name in {"ol", "ul"}:
+                self.pending = []
+                self.list_depth = 1
+                self.state = "skipping_list"
+                return
+            self._flush_pending()
+        if self.state == "skipping_list":
+            if name in {"ol", "ul"}:
+                self.list_depth += 1
+            return
+        if name == "h2":
+            self.state = "collecting_h2"
+            self.h2_depth = 1
+            self.h2_parts = [raw]
+            return
+        self.parts.append(raw)
+
+    def handle_startendtag(self, tag: str, attrs):
+        raw = self.get_starttag_text()
+        if self.state == "collecting_h2":
+            self.h2_parts.append(raw)
+            return
+        if self.state == "pending_heading":
+            self._flush_pending()
+        if self.state == "skipping_list":
+            return
+        self.parts.append(raw)
+
+    def handle_endtag(self, tag: str):
+        name = tag.lower()
+        if self.state == "collecting_h2":
+            if name == "h2":
+                self.h2_depth -= 1
+                if self.h2_depth == 0:
+                    text = text_content("".join(self.h2_parts) + "</h2>").lower()
+                    if text == "table of contents":
+                        self.pending = self.h2_parts + ["</h2>"]
+                        self.state = "pending_heading"
+                    else:
+                        self.parts.extend(self.h2_parts)
+                        self.parts.append("</h2>")
+                        self.state = "normal"
+                else:
+                    self.h2_parts.append("</h2>")
+            else:
+                self.h2_parts.append(f"</{tag}>")
+            return
+        if self.state == "pending_heading":
+            self._flush_pending()
+        if self.state == "skipping_list":
+            if name in {"ol", "ul"}:
+                self.list_depth -= 1
+                if self.list_depth == 0:
+                    self.state = "normal"
+            return
+        self.parts.append(f"</{tag}>")
+
+    def handle_data(self, data: str):
+        if self.state == "collecting_h2":
+            self.h2_parts.append(data)
+            return
+        if self.state == "pending_heading":
+            if data.strip():
+                self._flush_pending()
+                self.parts.append(data)
+            else:
+                self.pending.append(data)
+            return
+        if self.state == "skipping_list":
+            return
+        self.parts.append(data)
+
+    def handle_entityref(self, name: str):
+        self._handle_token(f"&{name};")
+
+    def handle_charref(self, name: str):
+        self._handle_token(f"&#{name};")
+
+    def handle_comment(self, data: str):
+        self._handle_token(f"<!--{data}-->")
+
+    def handle_decl(self, decl: str):
+        self._handle_token(f"<!{decl}>")
+
+    def handle_pi(self, data: str):
+        self._handle_token(f"<?{data}>")
+
+    def unknown_decl(self, data: str):
+        self._handle_token(f"<![{data}]>")
+
+    def _handle_token(self, raw: str):
+        if self.state == "collecting_h2":
+            self.h2_parts.append(raw)
+            return
+        if self.state == "pending_heading":
+            self._flush_pending()
+        if self.state == "skipping_list":
+            return
+        self.parts.append(raw)
+
+    def _flush_pending(self):
+        if self.state == "pending_heading":
+            self.parts.extend(self.pending)
+            self.pending = []
+            self.state = "normal"
+
+
 class _TextParser(HTMLParser):
     BLOCK_TAGS = {
             "address", "article", "aside", "blockquote", "br", "dd", "div",

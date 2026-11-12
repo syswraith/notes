@@ -11,17 +11,13 @@ from urllib.parse import urlparse
 import requests
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from htmlutil import absolutize_html, leading_blockquote, rewrite_urls, text_content
+from htmlutil import absolutize_html, leading_blockquote, rewrite_urls, strip_toc, text_content
 from ogimage import download_favicon, generate_thumbnail
 
 SRC_DIR = Path(__file__).parent
 TEMPLATES_DIR = SRC_DIR / "templates"
 STATIC_DIR = SRC_DIR / "static"
 
-TOC_RE = re.compile(
-        r'<h2[^>]*>\s*Table of Contents\s*</h2>\s*<ol[^>]*>.*?</ol>',
-        re.DOTALL | re.IGNORECASE,
-        )
 IMAGE_URL_RE = re.compile(
         r'https?://(?:private-user-images|user-images)\.githubusercontent\.com/'
         r'|https?://github\.com/user-attachments/assets/',
@@ -162,13 +158,6 @@ def split_description(body_html: str) -> tuple[str, str]:
     if quote is None:
         return "", body_html
     return quote, remainder.lstrip()
-
-
-def strip_toc(body_html: str) -> str:
-    '''
-    remove the hand-written "Table of Contents" heading and list
-    '''
-    return TOC_RE.sub("", body_html)
 
 
 def _clip(text: str, limit: int = 200) -> str:
