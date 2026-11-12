@@ -12,7 +12,7 @@ import requests
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from htmlutil import absolutize_html, leading_blockquote, rewrite_urls, text_content
-from ogimage import generate_thumbnail
+from ogimage import download_favicon, generate_thumbnail
 
 SRC_DIR = Path(__file__).parent
 TEMPLATES_DIR = SRC_DIR / "templates"
@@ -236,11 +236,23 @@ class Site:
         shutil.copytree(STATIC_DIR, out_dir / "static")
 
         site_url = site_url or self.site_url
+        favicon = download_favicon(site_url)
         thumbs: dict[int, str] = {}
-        for post in posts:
-            thumb = generate_thumbnail(post, site_url, out_dir)
-            if thumb:
-                thumbs[post.number] = thumb
+        try:
+            for post in posts:
+                try:
+                    thumb = generate_thumbnail(post, out_dir, favicon)
+                except Exception as e:
+                    print(f"  ! skipping thumbnail for #{post.number}: {e}", file=sys.stderr)
+                    thumb = None
+                if thumb:
+                    thumbs[post.number] = thumb
+        finally:
+            if favicon:
+                try:
+                    Path(favicon).unlink()
+                except OSError:
+                    pass
 
         site_thumb = next(iter(thumbs.values()), None)
 
