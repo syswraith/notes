@@ -5,7 +5,7 @@
 <article>
   <h1>Tags</h1>
   {% for tag, tag_posts in tags.items() %}
-  <section id="{{ tag|anchor }}">
+  <section id="{{ tag_anchors[tag] }}">
     <h2>{{ tag }} <small>({{ tag_posts|length }})</small></h2>
     <ul>
       {% for post in tag_posts %}

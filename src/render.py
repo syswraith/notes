@@ -81,6 +81,24 @@ def anchor(name: str) -> str:
     return slug or "tag"
 
 
+def tag_anchor_map(posts: list["Post"]) -> dict[str, str]:
+    anchors: dict[str, str] = {}
+    used: set[str] = set()
+    for post in posts:
+        for tag in post.tags:
+            if tag in anchors:
+                continue
+            base = anchor(tag)
+            candidate = base
+            suffix = 2
+            while candidate in used:
+                candidate = f"{base}-{suffix}"
+                suffix += 1
+            anchors[tag] = candidate
+            used.add(candidate)
+    return anchors
+
+
 def plural(n: int) -> str:
     return "" if n == 1 else "s"
 
@@ -275,6 +293,7 @@ class Site:
                     pass
 
         site_thumb = next(iter(thumbs.values()), None)
+        tag_anchors = tag_anchor_map(posts)
 
         for post in posts:
             img_dir = out_dir / str(post.number) / "images"
@@ -309,7 +328,7 @@ class Site:
             thumb = thumbs.get(post.number)
             if thumb:
                 og["image"] = self.absurl(thumb)
-            self._render("post.html", page, post=post, newer=newer, older=older, og=og)
+            self._render("post.html", page, post=post, newer=newer, older=older, og=og, tag_anchors=tag_anchors)
 
         tags: dict[str, list[Post]] = {}
         for post in posts:
@@ -324,8 +343,8 @@ class Site:
                 }
         if site_thumb:
             tags_og["image"] = self.absurl(site_thumb)
-        self._render("tags.html", out_dir / "tags.html", tags=tags, og=tags_og)
-        self._render("tags.html", out_dir / "tags" / "index.html", tags=tags, og=tags_og)
+        self._render("tags.html", out_dir / "tags.html", tags=tags, og=tags_og, tag_anchors=tag_anchors)
+        self._render("tags.html", out_dir / "tags" / "index.html", tags=tags, og=tags_og, tag_anchors=tag_anchors)
 
         self._render("404.html", out_dir / "404.html", og={"title": f"404 · {self.title}", "url": self.absurl("404.html"), "type": "website"})
 
