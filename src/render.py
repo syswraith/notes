@@ -336,15 +336,26 @@ class Site:
                 tags.setdefault(tag, []).append(post)
         tags_og = {
                 "title": f"Tags · {self.title}",
-                "url": self.absurl("tags.html"),
                 "type": "website",
                 "description": self.description,
                 "tags": [],
                 }
         if site_thumb:
             tags_og["image"] = self.absurl(site_thumb)
-        self._render("tags.html", out_dir / "tags.html", tags=tags, og=tags_og, tag_anchors=tag_anchors)
-        self._render("tags.html", out_dir / "tags" / "index.html", tags=tags, og=tags_og, tag_anchors=tag_anchors)
+        self._render(
+                "tags.html",
+                out_dir / "tags.html",
+                tags=tags,
+                og={**tags_og, "url": self.absurl("tags.html")},
+                tag_anchors=tag_anchors,
+                )
+        self._render(
+                "tags.html",
+                out_dir / "tags" / "index.html",
+                tags=tags,
+                og={**tags_og, "url": self.absurl("tags/")},
+                tag_anchors=tag_anchors,
+                )
 
         self._render("404.html", out_dir / "404.html", og={"title": f"404 · {self.title}", "url": self.absurl("404.html"), "type": "website"})
 
