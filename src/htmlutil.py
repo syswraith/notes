@@ -258,6 +258,13 @@ class _TocStripper(HTMLParser):
             self.pending = []
             self.state = "normal"
 
+    def close(self):
+        super().close()
+        if self.state == "collecting_h2":
+            self.parts.extend(self.h2_parts)
+        else:
+            self._flush_pending()
+
 
 class _TextParser(HTMLParser):
     BLOCK_TAGS = {
