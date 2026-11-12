@@ -40,7 +40,7 @@ src/
   render.py      # Dataclasses, comment threading, site renderer
   ogimage.py     # OpenGraph thumbnail generation (pictex)
   templates/     # Jinja2 templates (base, index, post, tags, feed, 404)
-  static/        # awsm.css, site.css, syntax.css
+  static/        # site.css, syntax.css (water.css loaded from CDN)
 dist/            # Generated output (gitignored)
 ```
 
