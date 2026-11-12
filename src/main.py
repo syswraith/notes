@@ -52,7 +52,7 @@ def main():
 
     client = Github(USER, REPO)
     print(f"Fetching open issues from {USER}/{REPO}...")
-    issues = client.blog(n=100)
+    issues = client.blog()
 
     posts = []
     for issue in issues:

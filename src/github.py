@@ -46,22 +46,22 @@ class Github:
         url = f"{self.base_url}/issues/{issue_id}/comments"
         return self._get_all(url, "application/vnd.github.full+json")
 
-    def blog(self, n: int = 10):
+    def blog(self):
         '''
-        get open, non-pull-request issues, newest first,
+        get all open, non-pull-request issues, newest first,
         bodies available as raw markdown (body) and HTML (body_html)
         '''
         url = f"{self.base_url}/issues"
         params = {
-                "per_page": n,
                 "sort": "created",
                 "direction": "desc",
                 "state": "open"
                 }
-        headers = self._get_headers("application/vnd.github.full+json")
-        response = requests.get(url, headers=headers, params=params)
-        response.raise_for_status()
-        return [i for i in response.json() if "pull_request" not in i]
+        return [
+                issue
+                for issue in self._get_all(url, "application/vnd.github.full+json", params)
+                if "pull_request" not in issue
+                ]
 
     def get_post_markdown(self, issue, tags: list[str]) -> str:
         """
