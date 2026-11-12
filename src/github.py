@@ -18,6 +18,20 @@ class Github:
         self.repo = repo
         self.base_url = f"https://api.github.com/repos/{user}/{repo}"
 
+    def _get_all(self, url: str, accept: str, params: dict | None = None) -> list[dict]:
+        '''
+        follow GitHub's pagination links and return every item
+        '''
+        params = dict(params or {}, per_page=100)
+        items: list[dict] = []
+        while url:
+            response = requests.get(url, headers=self._get_headers(accept), params=params)
+            response.raise_for_status()
+            items.extend(response.json())
+            url = response.links.get("next", {}).get("url")
+            params = None
+        return items
+
     def tags(self, issue) -> list[str]:
         '''
         get the labels associated with the issue
@@ -30,10 +44,7 @@ class Github:
         bodies pre-rendered as HTML in body_html
         '''
         url = f"{self.base_url}/issues/{issue_id}/comments"
-        headers = self._get_headers("application/vnd.github.full+json")
-        response = requests.get(url, headers=headers)
-        response.raise_for_status()
-        return response.json()
+        return self._get_all(url, "application/vnd.github.full+json")
 
     def blog(self, n: int = 10):
         '''
