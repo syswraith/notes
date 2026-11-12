@@ -11,7 +11,7 @@ from urllib.parse import urlparse
 import requests
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from htmlutil import leading_blockquote, text_content
+from htmlutil import leading_blockquote, rewrite_urls, text_content
 from ogimage import generate_thumbnail
 
 SRC_DIR = Path(__file__).parent
@@ -22,7 +22,11 @@ TOC_RE = re.compile(
         r'<h2[^>]*>\s*Table of Contents\s*</h2>\s*<ol[^>]*>.*?</ol>',
         re.DOTALL | re.IGNORECASE,
         )
-URL_RE = re.compile(r'https://private-user-images\.githubusercontent\.com/[^"\s]+')
+IMAGE_URL_RE = re.compile(
+        r'https?://(?:private-user-images|user-images)\.githubusercontent\.com/'
+        r'|https?://github\.com/user-attachments/assets/',
+        re.IGNORECASE,
+        )
 
 
 @dataclass
@@ -186,23 +190,26 @@ class Site:
         GitHub serves user-uploaded images from short-lived signed URLs;
         download them and point every src, href or srcset at the local copy
         '''
-        def localize(match: re.Match) -> str:
-            url = match.group(0)
-            path = urlparse(url).path
-            name = f"{hashlib.sha1(path.encode()).hexdigest()[:16]}{Path(path).suffix or '.png'}"
+        def localize(url: str) -> str:
+            remote = unescape(url)
+            if not IMAGE_URL_RE.match(remote):
+                return url
+            path = urlparse(remote).path
+            key = f"{urlparse(remote).netloc}{path}"
+            name = f"{hashlib.sha1(key.encode()).hexdigest()[:16]}{Path(path).suffix or '.png'}"
             target = img_dir / name
             if not target.exists():
                 try:
-                    response = requests.get(unescape(url), timeout=30)
+                    response = requests.get(remote, timeout=30)
                     response.raise_for_status()
                     img_dir.mkdir(parents=True, exist_ok=True)
                     target.write_bytes(response.content)
                 except (requests.RequestException, OSError) as e:
                     print(f"  ! keeping remote image {name}: {e}", file=sys.stderr)
-                    return match.group(0)
+                    return url
             return f"{prefix}{name}"
 
-        return URL_RE.sub(localize, html)
+        return rewrite_urls(html, localize)
 
     def _localize_comments(self, comments: list[Comment], img_dir: Path, prefix: str):
         for comment in comments:

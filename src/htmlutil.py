@@ -1,5 +1,22 @@
 import re
+from collections.abc import Callable
 from html.parser import HTMLParser
+
+URL_ATTRIBUTES = {"href", "poster", "src", "srcset"}
+ATTRIBUTE_RE = re.compile(
+        r'(?i)(\b(?:href|poster|src|srcset)\s*=\s*)(["\'])(.*?)\2',
+        re.DOTALL,
+        )
+
+
+def rewrite_urls(html: str, callback: Callable[[str], str]) -> str:
+    '''
+    rewrite URLs in href/src/poster/srcset attributes, leaving other text alone
+    '''
+    parser = _UrlRewriteParser(callback)
+    parser.feed(html or "")
+    parser.close()
+    return "".join(parser.parts)
 
 
 def text_content(html: str) -> str:
@@ -24,6 +41,64 @@ def leading_blockquote(html: str) -> tuple[str | None, str]:
     if not parser.found or parser.depth:
         return None, html
     return "".join(parser.inner), "".join(parser.after)
+
+
+class _UrlRewriteParser(HTMLParser):
+    def __init__(self, callback: Callable[[str], str]):
+        super().__init__(convert_charrefs=False)
+        self.callback = callback
+        self.parts: list[str] = []
+
+    def handle_starttag(self, tag: str, attrs):
+        self.parts.append(self._rewrite_tag(self.get_starttag_text()))
+
+    def handle_startendtag(self, tag: str, attrs):
+        self.parts.append(self._rewrite_tag(self.get_starttag_text()))
+
+    def handle_endtag(self, tag: str):
+        self.parts.append(f"</{tag}>")
+
+    def handle_data(self, data: str):
+        self.parts.append(data)
+
+    def handle_entityref(self, name: str):
+        self.parts.append(f"&{name};")
+
+    def handle_charref(self, name: str):
+        self.parts.append(f"&#{name};")
+
+    def handle_comment(self, data: str):
+        self.parts.append(f"<!--{data}-->")
+
+    def handle_decl(self, decl: str):
+        self.parts.append(f"<!{decl}>")
+
+    def handle_pi(self, data: str):
+        self.parts.append(f"<?{data}>")
+
+    def unknown_decl(self, data: str):
+        self.parts.append(f"<![{data}]>")
+
+    def _rewrite_tag(self, raw: str) -> str:
+        def replace(match: re.Match) -> str:
+            prefix, quote, value = match.group(1), match.group(2), match.group(3)
+            name = prefix.split("=", 1)[0].strip().lower()
+            if name == "srcset":
+                value = self._rewrite_srcset(value)
+            else:
+                value = self.callback(value)
+            return f"{prefix}{quote}{value}{quote}"
+
+        return ATTRIBUTE_RE.sub(replace, raw)
+
+    def _rewrite_srcset(self, value: str) -> str:
+        parts = []
+        for candidate in value.split(","):
+            match = re.match(r"^(\s*)(\S+)(.*)$", candidate, re.DOTALL)
+            if match:
+                candidate = f"{match.group(1)}{self.callback(match.group(2))}{match.group(3)}"
+            parts.append(candidate)
+        return ",".join(parts)
 
 
 class _TextParser(HTMLParser):
