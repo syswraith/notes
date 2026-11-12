@@ -6,10 +6,6 @@
   text-decoration: none;
 }
 
-.fragment-crumb {
-  display: none;
-}
-
 body > header {
   margin-bottom: 1.5em;
 }

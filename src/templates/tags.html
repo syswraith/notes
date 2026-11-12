@@ -1,18 +1,11 @@
 {% extends "base.html" %}
 {% block title %}Tags &middot; {{ site_title }}{% endblock %}
-{% block head %}
-<style>
-{% for tag, anchor in tag_anchors.items() %}
-body:has(#{{ anchor }}:target) #crumb-{{ anchor }} { display: inline; }
-{% endfor %}
-</style>
-{% endblock %}
 {% block content %}
-<nav class="breadcrumb"><a href="{{ tld }}">~</a> / <a href="{{ base }}">{{ repo }}</a> / <a href="{{ base }}tags/">Tags</a>{% for tag, anchor in tag_anchors.items() %}<span class="fragment-crumb" id="crumb-{{ anchor }}"> / <a href="#{{ anchor }}">{{ tag }}</a></span>{% endfor %}</nav>
+<nav class="breadcrumb"><a href="{{ tld }}">~</a> / <a href="{{ base }}">{{ repo }}</a> / <a href="{{ base }}tags/">Tags</a><span id="tag-crumb"></span></nav>
 <article>
   <h1>Tags</h1>
   {% for tag, tag_posts in tags.items() %}
-  <section id="{{ tag_anchors[tag] }}">
+  <section id="{{ tag_anchors[tag] }}" data-tag="{{ tag }}">
     <h2>{{ tag }} <small>({{ tag_posts|length }})</small></h2>
     <ul>
       {% for post in tag_posts %}
@@ -26,4 +19,27 @@ body:has(#{{ anchor }}:target) #crumb-{{ anchor }} { display: inline; }
   <p>No tags yet.</p>
   {% endfor %}
 </article>
+<script>
+  {
+    const crumb = document.getElementById("tag-crumb");
+    const update = () => {
+      crumb.replaceChildren();
+      let id;
+      try {
+        id = decodeURIComponent(location.hash.slice(1));
+      } catch {
+        return;
+      }
+      const section = id && document.getElementById(id);
+      if (!section || !section.dataset.tag) return;
+      crumb.append(" / ");
+      const link = document.createElement("a");
+      link.href = location.hash;
+      link.textContent = section.dataset.tag;
+      crumb.append(link);
+    };
+    addEventListener("hashchange", update);
+    update();
+  }
+</script>
 {% endblock %}
