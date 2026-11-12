@@ -84,10 +84,4 @@ def generate_thumbnail(post, out_dir: Path, favicon_path: str | None = None) -> 
     image = canvas.render(layout)
     image.save(str(target))
 
-    if favicon_path:
-        try:
-            os.unlink(favicon_path)
-        except OSError:
-            pass
-
     return f"{post.number}/images/thumbnail.png"
