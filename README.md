@@ -1,6 +1,6 @@
 # Riff
 
-A minimal static site generator that publishes [microblogs](https://en.wikipedia.org/wiki/Microblogging) from GitHub Issues. Open an issue to publish; close it to unpublish. Labels become tags; comments become threaded replies.
+A minimal static site generator that publishes [microblogs](https://en.wikipedia.org/wiki/Microblogging) from GitHub Issues. Open an issue with the `publish` label to publish; remove the label or close the issue to unpublish. Other labels become tags; comments become threaded replies.
 
 ## Using this template
 
@@ -15,14 +15,14 @@ A minimal static site generator that publishes [microblogs](https://en.wikipedia
 > [!IMPORTANT]
 > Restrict issue creation to collaborators only else anyone can trigger a workflow by creating an issue!
 
-Open an issue in the repository. The issue title becomes the post title; the body becomes the post content. Use labels to tag posts. Close the issue to unpublish.
+Open an issue in the repository and add the `publish` label. The issue title becomes the post title; the body becomes the post content. Use other labels to tag posts; `publish` controls publication and is not shown as a tag. Remove the label or close the issue to unpublish. Issues without the label are ignored.
 
 Math works with `$...$` (inline) and `$$...$$` (block) delimiters via KaTeX.
 
 ## How it works
 
-- **Posts** = open GitHub issues. Close an issue to unpublish it.
-- **Tags** = issue labels.
+- **Posts** = open GitHub issues carrying the `publish` label. Remove the label or close the issue to unpublish it.
+- **Tags** = issue labels other than `publish`.
 - **Comments** = issue comments. Quote-replies (comments opening with a blockquote of an earlier comment) are detected and nested under their parent recursively.
 - **Bodies** are rendered by GitHub's API (`application/vnd.github.full+json`), so no Markdown library is needed at build time.
 - **Images** uploaded to issues are downloaded at build time and served locally
@@ -73,6 +73,7 @@ The site builds and deploys via GitHub Actions on:
 | `SITE_URL` | No | Site URL for the Atom feed and absolute links. Defaults to `http://localhost:8000`. |
 | `SITE_TITLE` | No | Site title. Defaults to `"{USER}'s {REPO}"`. |
 | `SITE_DESCRIPTION` | No | Site description used on the homepage. |
+| `PUBLISH_LABEL` | No | Label required to publish an issue. Defaults to `publish`. |
 | `GITHUB_TOKEN` | No | Authenticated GitHub API access (5000/hr vs 60/hr unauthenticated). Provided automatically in Actions. |
 
 > **Note:** `SITE_URL` must be a publicly reachable URL (not `localhost`) for Discord, Twitter, and other link-preview crawlers to fetch `og:image`. Locally you can use `http://localhost:8000` for testing, but thumbnails won't appear in embeds until the site is deployed to a public URL.

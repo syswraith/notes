@@ -32,11 +32,15 @@ class Github:
             params = None
         return items
 
-    def tags(self, issue) -> list[str]:
+    def tags(self, issue, exclude: str | None = None) -> list[str]:
         '''
         get the labels associated with the issue
         '''
-        return [label["name"] for label in issue.get("labels", [])]
+        return [
+                label["name"]
+                for label in issue.get("labels", [])
+                if not exclude or label["name"].casefold() != exclude.casefold()
+                ]
 
     def comments(self, issue_id: int):
         '''
@@ -46,9 +50,10 @@ class Github:
         url = f"{self.base_url}/issues/{issue_id}/comments"
         return self._get_all(url, "application/vnd.github.full+json")
 
-    def blog(self):
+    def blog(self, label: str | None = None):
         '''
         get all open, non-pull-request issues, newest first,
+        optionally restricted to issues carrying the given label;
         bodies available as raw markdown (body) and HTML (body_html)
         '''
         url = f"{self.base_url}/issues"
@@ -57,8 +62,14 @@ class Github:
                 "direction": "desc",
                 "state": "open"
                 }
+        if label:
+            params["labels"] = label
         return [
                 issue
                 for issue in self._get_all(url, "application/vnd.github.full+json", params)
                 if "pull_request" not in issue
+                and (
+                    not label
+                    or any(name.casefold() == label.casefold() for name in self.tags(issue))
+                    )
                 ]

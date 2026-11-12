@@ -18,6 +18,7 @@ if not repo_full:
     sys.exit("GITHUB_REPOSITORY is not set. Set it to owner/repo; GitHub Actions provides it automatically.")
 USER, REPO = repo_full.split("/", 1)
 OUT_DIR = Path(__file__).parent.parent / "dist"
+PUBLISH_LABEL = os.getenv("PUBLISH_LABEL", "publish").strip()
 
 
 def build_post(client: Github, issue: dict) -> Post:
@@ -39,7 +40,7 @@ def build_post(client: Github, issue: dict) -> Post:
             created_at=issue["created_at"],
             updated_at=issue["updated_at"],
             url=issue["html_url"],
-            tags=client.tags(issue),
+            tags=client.tags(issue, PUBLISH_LABEL or None),
             description=description,
             body_html=strip_toc(body_html),
             comments=comments,
@@ -52,7 +53,7 @@ def main():
 
     client = Github(USER, REPO)
     print(f"Fetching open issues from {USER}/{REPO}...")
-    issues = client.blog()
+    issues = client.blog(PUBLISH_LABEL or None)
 
     posts = []
     for issue in issues:
