@@ -24,7 +24,8 @@
 <h2 id="comments">{{ post.comments|count_comments }} comment{{ post.comments|count_comments|plural }}</h2>
 {% macro render_comment(comment) %}
 <article class="comment">
-  <p><a href="{{ comment.author_url }}">{{ comment.author }}</a>: {{ comment.body_html|safe }}</p>
+  <div class="comment-header"><a href="{{ comment.author_url }}">{{ comment.author }}</a></div>
+  <div class="comment-body">{{ comment.body_html|safe }}</div>
   {% for reply in comment.replies %}
   {{ render_comment(reply) }}
   {% endfor %}
