@@ -62,29 +62,3 @@ class Github:
                 for issue in self._get_all(url, "application/vnd.github.full+json", params)
                 if "pull_request" not in issue
                 ]
-
-    def get_post_markdown(self, issue, tags: list[str]) -> str:
-        """
-        Takes an issue dictionary and returns a single Markdown string
-        containing YAML frontmatter and the issue body (no comments).
-        """
-        if tags is None:
-            tags = [label["name"] for label in issue.get("labels", [])]
-
-        title = issue.get("title", "Untitled")
-        date = issue.get("created_at", "")[:10]
-        updated_at = issue.get("updated_at", "")[:10]
-        url = issue.get("html_url", "")
-        body = issue.get("body", "")
-
-        # Construct YAML Frontmatter
-        frontmatter = "---\n"
-        frontmatter += f'title: "{title}"\n'
-        frontmatter += f'date: "{date}"\n'
-        if updated_at and updated_at != date:
-            frontmatter += f'updated_at: "{updated_at}"\n'
-        frontmatter += f'url: "{url}"\n'
-        frontmatter += f'tags: {tags}\n'
-        frontmatter += "---\n\n"
-
-        return frontmatter + body
