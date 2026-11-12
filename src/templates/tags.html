@@ -1,7 +1,14 @@
 {% extends "base.html" %}
 {% block title %}Tags &middot; {{ site_title }}{% endblock %}
+{% block head %}
+<style>
+{% for tag, anchor in tag_anchors.items() %}
+body:has(#{{ anchor }}:target) #crumb-{{ anchor }} { display: inline; }
+{% endfor %}
+</style>
+{% endblock %}
 {% block content %}
-<nav class="breadcrumb"><a href="{{ tld }}">~</a> / <a href="{{ base }}">{{ repo }}</a> / <a href="{{ base }}tags/">Tags</a></nav>
+<nav class="breadcrumb"><a href="{{ tld }}">~</a> / <a href="{{ base }}">{{ repo }}</a> / <a href="{{ base }}tags/">Tags</a>{% for tag, anchor in tag_anchors.items() %}<span class="fragment-crumb" id="crumb-{{ anchor }}">{{ tag }}</span>{% endfor %}</nav>
 <article>
   <h1>Tags</h1>
   {% for tag, tag_posts in tags.items() %}

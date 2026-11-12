@@ -27,6 +27,7 @@
   {% if og.modified %}<meta property="article:modified_time" content="{{ og.modified }}">{% endif %}
   {% if og.section %}<meta property="article:section" content="{{ og.section }}">{% endif %}
   <meta property="article:author" content="{{ user }}">
+  {% block head %}{% endblock %}
 </head>
 <body>
 <main>
