@@ -25,7 +25,7 @@ class Github:
         params = dict(params or {}, per_page=100)
         items: list[dict] = []
         while url:
-            response = requests.get(url, headers=self._get_headers(accept), params=params)
+            response = requests.get(url, headers=self._get_headers(accept), params=params, timeout=30)
             response.raise_for_status()
             items.extend(response.json())
             url = response.links.get("next", {}).get("url")
