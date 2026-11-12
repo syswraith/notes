@@ -11,7 +11,7 @@ from urllib.parse import urlparse
 import requests
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from htmlutil import leading_blockquote, rewrite_urls, text_content
+from htmlutil import absolutize_html, leading_blockquote, rewrite_urls, text_content
 from ogimage import generate_thumbnail
 
 SRC_DIR = Path(__file__).parent
@@ -165,7 +165,13 @@ class Site:
                 trim_blocks=True,
                 lstrip_blocks=True,
                 )
-        self.env.filters.update(datefmt=datefmt, anchor=anchor, plural=plural, count_comments=count_comments)
+        self.env.filters.update(
+                datefmt=datefmt,
+                anchor=anchor,
+                plural=plural,
+                count_comments=count_comments,
+                absolutize=self.absolutize,
+                )
         self.env.globals.update(
                 site_title=title,
                 user=user,
@@ -180,6 +186,9 @@ class Site:
         if rel:
             return f"{site}/{rel.lstrip('/')}"
         return f"{site}/"
+
+    def absolutize(self, html: str) -> str:
+        return absolutize_html(html, self.tld)
 
     def _render(self, template: str, out: Path, **context):
         out.parent.mkdir(parents=True, exist_ok=True)

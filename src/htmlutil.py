@@ -19,6 +19,18 @@ def rewrite_urls(html: str, callback: Callable[[str], str]) -> str:
     return "".join(parser.parts)
 
 
+def absolutize_html(html: str, origin: str) -> str:
+    '''
+    make root-relative URLs in an HTML fragment absolute
+    '''
+    origin = origin.rstrip("/")
+
+    def absolutize(url: str) -> str:
+        return f"{origin}{url}" if url.startswith("/") else url
+
+    return rewrite_urls(html, absolutize)
+
+
 def text_content(html: str) -> str:
     '''
     collapse an HTML fragment to plain text
