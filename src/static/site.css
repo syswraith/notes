@@ -6,10 +6,6 @@
   text-decoration: none;
 }
 
-body > header {
-  margin-bottom: 1.5em;
-}
-
 nav {
   text-align: left;
   margin-bottom: 1.5em;
@@ -21,10 +17,6 @@ nav ul {
   margin: 0;
   display: inline-flex;
   gap: 1.5em;
-}
-
-body > header h1 {
-  font-size: 24px;
 }
 
 article header h1 {

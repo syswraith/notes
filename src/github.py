@@ -14,8 +14,6 @@ class Github:
         return headers
 
     def __init__(self, user: str, repo: str):
-        self.user = user
-        self.repo = repo
         self.base_url = f"https://api.github.com/repos/{user}/{repo}"
 
     def _get_all(self, url: str, accept: str, params: dict | None = None) -> list[dict]:

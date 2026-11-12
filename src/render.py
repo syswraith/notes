@@ -11,7 +11,7 @@ from urllib.parse import urlparse
 import requests
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from htmlutil import absolutize_html, leading_blockquote, rewrite_urls, strip_toc, text_content
+from htmlutil import absolutize_html, leading_blockquote, rewrite_urls, text_content
 from ogimage import download_favicon, generate_thumbnail
 
 SRC_DIR = Path(__file__).parent
@@ -29,7 +29,6 @@ IMAGE_URL_RE = re.compile(
 class Comment:
     author: str
     author_url: str
-    created_at: str
     body_html: str
     replies: list["Comment"] = field(default_factory=list)
 
@@ -179,8 +178,6 @@ class Site:
     def __init__(self, title: str, user: str, repo: str, site_url: str, description: str = ""):
         self.title = title
         self.description = description
-        self.user = user
-        self.repo = repo
         self.site_url = site_url.rstrip("/")
         path = urlparse(self.site_url).path.strip("/")
         self.base = f"/{path}/" if path else "/"
@@ -195,7 +192,6 @@ class Site:
                 )
         self.env.filters.update(
                 datefmt=datefmt,
-                anchor=anchor,
                 plural=plural,
                 count_comments=count_comments,
                 absolutize=self.absolutize,

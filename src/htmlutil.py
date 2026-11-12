@@ -2,7 +2,6 @@ import re
 from collections.abc import Callable
 from html.parser import HTMLParser
 
-URL_ATTRIBUTES = {"href", "poster", "src", "srcset"}
 ATTRIBUTE_RE = re.compile(
         r'(?i)(\b(?:href|poster|src|srcset)\s*=\s*)(["\'])(.*?)\2',
         re.DOTALL,
