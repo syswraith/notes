@@ -59,6 +59,23 @@ def datefmt(iso: str) -> str:
         return (iso or "")[:10]
 
 
+def latest_updated(posts: list["Post"]) -> str:
+    timestamps = []
+    for post in posts:
+        value = post.updated_at or post.created_at
+        if not value:
+            continue
+        try:
+            parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        except ValueError:
+            continue
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=timezone.utc)
+        timestamps.append(parsed)
+    latest = max(timestamps, default=datetime.now(timezone.utc))
+    return latest.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
 def anchor(name: str) -> str:
     slug = "".join(c if c.isalnum() else "-" for c in name.lower()).strip("-")
     return slug or "tag"
@@ -312,8 +329,5 @@ class Site:
 
         self._render("404.html", out_dir / "404.html", og={"title": f"404 · {self.title}", "url": self.absurl("404.html"), "type": "website"})
 
-        feed_updated = max(
-                (p.updated_at or p.created_at for p in posts),
-                default=datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
-                )
+        feed_updated = latest_updated(posts)
         self._render("feed.xml", out_dir / "feed.xml", posts=posts, feed_updated=feed_updated)
