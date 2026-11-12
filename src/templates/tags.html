@@ -8,7 +8,7 @@ body:has(#{{ anchor }}:target) #crumb-{{ anchor }} { display: inline; }
 </style>
 {% endblock %}
 {% block content %}
-<nav class="breadcrumb"><a href="{{ tld }}">~</a> / <a href="{{ base }}">{{ repo }}</a> / <a href="{{ base }}tags/">Tags</a>{% for tag, anchor in tag_anchors.items() %}<a class="fragment-crumb" id="crumb-{{ anchor }}" href="#{{ anchor }}">{{ tag }}</a>{% endfor %}</nav>
+<nav class="breadcrumb"><a href="{{ tld }}">~</a> / <a href="{{ base }}">{{ repo }}</a> / <a href="{{ base }}tags/">Tags</a>{% for tag, anchor in tag_anchors.items() %}<span class="fragment-crumb" id="crumb-{{ anchor }}"> / <a href="#{{ anchor }}">{{ tag }}</a></span>{% endfor %}</nav>
 <article>
   <h1>Tags</h1>
   {% for tag, tag_posts in tags.items() %}

@@ -10,10 +10,6 @@
   display: none;
 }
 
-.fragment-crumb::before {
-  content: " / ";
-}
-
 body > header {
   margin-bottom: 1.5em;
 }
