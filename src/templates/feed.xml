@@ -13,7 +13,7 @@
     <published>{{ post.created_at }}</published>
     <updated>{{ post.updated_at or post.created_at }}</updated>
     <author><name>{{ post.author }}</name></author>
-    <content type="html"><![CDATA[{{ post.body_html|absolutize|safe }}]]></content>
+    <content type="html"><![CDATA[{{ post.body_html|absolutize|cdata|safe }}]]></content>
   </entry>
   {% endfor %}
 </feed>

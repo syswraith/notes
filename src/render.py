@@ -72,6 +72,10 @@ def _plain(html: str) -> str:
     return text_content(html)
 
 
+def cdata(text: str) -> str:
+    return text.replace("]]>", "]]]]><![CDATA[>")
+
+
 def _is_quote_reply(quote: str, earlier: str) -> bool:
     a, b = _plain(quote), _plain(earlier)
     if len(a) < 20 or not b:
@@ -171,6 +175,7 @@ class Site:
                 plural=plural,
                 count_comments=count_comments,
                 absolutize=self.absolutize,
+                cdata=cdata,
                 )
         self.env.globals.update(
                 site_title=title,
