@@ -68,9 +68,16 @@ h2#comments {
 
 .pager {
   display: flex;
-  justify-content: space-between;
   gap: 1em;
   margin: 2.5em 0;
+}
+
+.pager .older {
+  margin-right: auto;
+}
+
+.pager .newer {
+  margin-left: auto;
 }
 
 .pager a {

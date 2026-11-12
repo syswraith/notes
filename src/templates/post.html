@@ -16,8 +16,8 @@
 
 {% if newer or older %}
 <nav class="pager">
-  {% if newer %}<a href="{{ base }}{{ newer.number }}/" title="{{ newer.title }}">&larr; Newer</a>{% endif %}
-  {% if older %}<a href="{{ base }}{{ older.number }}/" title="{{ older.title }}">Older &rarr;</a>{% endif %}
+  {% if older %}<a class="older" href="{{ base }}{{ older.number }}/" title="{{ older.title }}">&larr; Older</a>{% endif %}
+  {% if newer %}<a class="newer" href="{{ base }}{{ newer.number }}/" title="{{ newer.title }}">Newer &rarr;</a>{% endif %}
 </nav>
 {% endif %}
 
