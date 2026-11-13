@@ -79,7 +79,7 @@ def generate_thumbnail(post, out_dir: Path, favicon_path: str | None = None) -> 
             Image(favicon_path).size(64, 64).absolute_position(right=30, bottom=30)
         )
 
-    layout = Column(*children).gap(32).padding(60).height(630)
+    layout = Column(*children).width(1200).gap(32).padding(60).height(630)
 
     image = canvas.render(layout)
     image.save(str(target))
