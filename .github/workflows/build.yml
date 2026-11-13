@@ -40,8 +40,7 @@ jobs:
       - run: uv run python src/main.py
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Custom domains serve from the root; project sites keep /<repo>.
-          SITE_URL: ${{ endsWith(steps.pages.outputs.host, '.github.io') && steps.pages.outputs.base_url || steps.pages.outputs.origin }}
+          SITE_URL: ${{ steps.pages.outputs.base_url }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

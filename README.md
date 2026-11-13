@@ -8,7 +8,7 @@ A minimal static site generator that publishes [microblogs](https://en.wikipedia
 2. Clone your new repository locally.
 3. Go to **Settings → Pages → Build and deployment → Source** and select **GitHub Actions**.
 4. Push any change (or use the Actions tab → "Run workflow") to trigger the first build.
-5. By default, your site deploys to `https://<owner>.github.io/<repo>/`. See [Custom domain](#custom-domain) to serve it from a subdomain instead.
+5. Your site deploys to `https://<owner>.github.io/<repo>/`.
 
 ## Writing posts
 
@@ -66,22 +66,12 @@ The site builds and deploys via GitHub Actions on:
 - Issue comments (created, edited, deleted)
 - Pushes to `src/`, `pyproject.toml`, `uv.lock`, or the workflow file
 
-### Custom domain
-
-To serve the site from a subdomain such as `notes.example.com`:
-
-1. In **Settings → Pages → Custom domain**, enter the subdomain and save.
-2. At your DNS provider, create a `CNAME` record for the subdomain pointing to `<owner>.github.io` (not the repository URL).
-3. Wait for DNS and TLS provisioning, then rerun **Actions → build site → Run workflow**.
-
-Changing Pages settings does not trigger the workflow automatically. The next build uses the custom domain root (`https://notes.example.com/`) instead of `https://<owner>.github.io/<repo>/`. With Actions-based Pages, GitHub stores the custom domain in repository settings, so a `CNAME` file in `dist` is not required.
-
 ## Environment variables
 
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `GITHUB_REPOSITORY` | Yes (locally) | `owner/repo`. Provided automatically in GitHub Actions. |
-| `SITE_URL` | No | Site URL for the Atom feed and absolute links. Defaults to `http://localhost:8000`. In Actions, `configure-pages` supplies it; custom domains use the domain root. |
+| `SITE_URL` | No | Site URL for the Atom feed and absolute links. Defaults to `http://localhost:8000`. |
 | `SITE_TITLE` | No | Site title. Defaults to `"{USER}'s {REPO}"`. |
 | `SITE_DESCRIPTION` | No | Site description used in metadata and link previews. |
 | `PUBLISH_LABEL` | No | Label required to publish an issue. Defaults to `publish`; create the label in the repository if needed. |
